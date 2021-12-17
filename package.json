@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/zkpranav/threejs-multiplayer-demo/issues"
   },
-  "homepage": "https://github.com/zkpranav/threejs-multiplayer-demo#readme"
+  "homepage": "https://github.com/zkpranav/threejs-multiplayer-demo#readme",
+  "dependencies": {
+    "dat.gui": "^0.7.7",
+    "express": "^4.17.2",
+    "gsap": "^3.9.0",
+    "socket.io": "^4.4.0",
+    "three": "^0.135.0"
+  }
 }

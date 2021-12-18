@@ -7,6 +7,28 @@ import Scene from './scene.js'
 const socket = io()
 
 /**
+ * Utilities
+ */
+function getRandomGeometry() {
+    const random = Math.random()
+    if (random > 0.5) {
+        return new THREE.Mesh(
+            new THREE.BoxGeometry(0.2, 0.2, 0.2, 3, 3, 3),
+            new THREE.MeshBasicMaterial({
+                wireframe: true
+            })
+        )
+    } else {
+        return new THREE.Mesh(
+            new THREE.SphereGeometry(0.2, 8, 8),
+            new THREE.MeshBasicMaterial({
+                wireframe: true
+            })
+        )
+    }
+}
+
+/**
  * Player scene
  */
 const playerScene = new Scene()
@@ -26,16 +48,11 @@ socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, us
     Object.keys(users).forEach((id) => {
         if (id != currentUserId) {
             userData[id] = {
-                mesh: new THREE.Mesh(
-                    new THREE.BoxGeometry(0.2, 0.2, 0.2, 3, 3, 3),
-                    new THREE.MeshBasicMaterial({
-                        color: new THREE.Color(users[id].color),
-                        wireframe: true
-                    })
-                )
+                mesh: getRandomGeometry()
             }
 
             userData[id].mesh.name = id
+            userData[id].mesh.material.color = new THREE.Color(users[id].color)
             userData[id].mesh.position.set(...users[id].position)
             userData[id].mesh.rotation.set(...users[id].rotation)
             playerScene.scene.add(userData[id].mesh)
@@ -48,15 +65,11 @@ socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, us
  */
 socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
     userData[newUserId] = {
-        mesh: new THREE.Mesh(
-            new THREE.BoxGeometry(0.2, 0.2, 0.2, 3, 3, 3),
-            new THREE.MeshBasicMaterial({
-                color: new THREE.Color(users[newUserId].color),
-                wireframe: true
-            })
-        )
+        mesh: getRandomGeometry()
     }
 
+    userData[newUserId].mesh.name = newUserId
+    userData[newUserId].mesh.material.color = new THREE.Color(users[newUserId].color)
     userData[newUserId].mesh.position.set(...users[newUserId].position)
     userData[newUserId].mesh.rotation.set(...users[newUserId].rotation)
     playerScene.scene.add(userData[newUserId].mesh)

@@ -23,6 +23,13 @@ class Scene {
         }
 
         /**
+         * GUI
+         */
+        this.gui = new dat.GUI({
+            closed: true
+        })
+
+        /**
          * Instantiating a scene
          */
         this.scene = new THREE.Scene()
@@ -32,6 +39,12 @@ class Scene {
          */
         this.camera = new THREE.PerspectiveCamera(45, this.sizes.width / this.sizes.height, 0.1, 100)
         this.scene.add(this.camera)
+
+        // Helicopter View
+        this.helo = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 100)
+        this.helo.position.y = 10
+        this.helo.lookAt(new THREE.Vector3(0, 0, 0))
+        this.scene.add(this.helo)
 
         /**
          * Controls

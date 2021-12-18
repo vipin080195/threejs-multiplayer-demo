@@ -67,6 +67,15 @@ io.on('connection', function handleConnection (socket) {
      */
     socket.broadcast.emit('renderNewUser', socket.id, users)
 
+    /**
+     * On user move, update positions in database and notify others
+     */
+    socket.on('moved', function handleMoved(newPosition) {
+        users[socket.id].position = newPosition
+
+        socket.broadcast.emit('updateUserPosition', socket.id, users[socket.id].position)
+    })
+
     socket.on('disconnect', function handleDisconnect() {
         console.log(`User - ${socket.id} - disconnected`)
         console.log(`# of clients: ${io.engine.clientsCount}`)

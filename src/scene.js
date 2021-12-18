@@ -38,9 +38,7 @@ class Scene {
          */
         this.firstPersonControls = new FirstPersonControls(this.camera, this.canvas)
         this.firstPersonControls.enabled = true
-        this.firstPersonControls.activeLook = false
-        this.firstPersonControls.lookVertical = false
-        this.firstPersonControls.lookSpeed = 0.05
+        this.firstPersonControls.lookSpeed = 0.0005
 
         /**
          * Setup renderer

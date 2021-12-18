@@ -25,7 +25,11 @@ app.use('/', express.static(__dirname + '/dist'))
  * Setup Web Socket events
  */
 io.on('connection', (socket) => {
-    console.log('New user connected')
+    console.log(`User - ${socket.id} - connected`)
+
+    socket.on('disconnect', () => {
+        console.log(`User - ${socket.id} - disconnected`)
+    })
 })
 
 

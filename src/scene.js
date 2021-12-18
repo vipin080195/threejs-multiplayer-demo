@@ -29,6 +29,10 @@ class Scene {
             closed: true
         })
 
+        this.parameters = {
+            heloView: false
+        }
+
         /**
          * Instantiating a scene
          */
@@ -42,9 +46,11 @@ class Scene {
 
         // Helicopter View
         this.helo = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 100)
-        this.helo.position.y = 10
+        this.helo.position.y = 3
         this.helo.lookAt(new THREE.Vector3(0, 0, 0))
         this.scene.add(this.helo)
+
+        this.gui.add(this.parameters, 'heloView').name('Helicopter View')
 
         /**
          * Controls
@@ -80,7 +86,12 @@ class Scene {
     animate() {
         this.firstPersonControls.update(this.clock.getDelta())
 
-        this.renderer.render(this.scene, this.camera)
+        if (this.parameters.heloView) {
+            this.renderer.render(this.scene, this.helo)
+        } else {
+            this.renderer.render(this.scene, this.camera)
+        }
+
         window.requestAnimationFrame(() => {
             this.animate()
         })

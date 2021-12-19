@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import Scene from './scene.js'
+import * as dat from 'dat.gui'
+import gsap from 'gsap'
 
 /**
  * Setup Socket.io-client
@@ -32,13 +34,44 @@ function getRandomGeometry() {
  * Player scene
  */
 const playerScene = new Scene()
-console.log(playerScene.scene)
 
 /**
  * Local Data
  */
 const userData = {}
 let currentUser = undefined
+
+/**
+ * GUI
+ */
+const gui = new dat.GUI({
+    closed: false
+})
+
+/**
+ * Helicopter View
+ */
+gui.add(playerScene.parameters, 'heloView').name('Helicopter View')
+
+/**
+ * Trigger animation
+ */
+playerScene.parameters['triggerAnimation'] = function() {
+    socket.emit('animationTriggered', currentUser)
+
+    gsap.to(playerScene.camera.position, {
+        duration: 2,
+        y: 0.5,
+        ease: 'power1.out'
+    })
+    gsap.to(playerScene.camera.position, {
+        duration: 2,
+        y: 0,
+        ease: 'bounce.out',
+        delay: 2
+    })
+}
+gui.add(playerScene.parameters, 'triggerAnimation').name('Animate')
 
 /**
  * Render other users
@@ -86,6 +119,7 @@ socket.on('userLeaving', function handleUserLeaving(userId) {
 /**
  * Handle synced movement
  */
+let count = 0
 window.addEventListener('keydown', function handleOnKeyDown(e) {
     socket.emit('moved', [playerScene.camera.position.x, playerScene.camera.position.y, playerScene.camera.position.z])
 })
@@ -102,4 +136,19 @@ socket.on('updateUserPosition', function handleUpdateUserPosition(userId, newPos
     lerpedPosition.z = THREE.MathUtils.lerp(oldPosition.z, newPosition[2], 0.2)
 
     userData[userId].mesh.position.set(lerpedPosition.x, lerpedPosition.y, lerpedPosition.z)
+})
+
+socket.on('updateAnimation', function handleUpdateAnimation(userId) {
+    console.log('TEST')
+    gsap.to(userData[userId].mesh.position, {
+        duration: 2,
+        y: 0.5,
+        ease: 'power1.out'
+    })
+    gsap.to(userData[userId].mesh.position, {
+        duration: 2,
+        y: 0,
+        ease: 'bounce.out',
+        delay: 2
+    })
 })

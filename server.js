@@ -76,6 +76,10 @@ io.on('connection', function handleConnection (socket) {
         socket.broadcast.emit('updateUserPosition', socket.id, users[socket.id].position)
     })
 
+    socket.on('animationTriggered', function handleTriggerAnimation(userId) {
+        socket.broadcast.emit('updateAnimation', userId)
+    })
+
     socket.on('disconnect', function handleDisconnect() {
         console.log(`User - ${socket.id} - disconnected`)
         console.log(`# of clients: ${io.engine.clientsCount}`)

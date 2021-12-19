@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import * as dat from 'dat.gui'
 import { OrbitControls } from './OrbitControls.js'
 import { FirstPersonControls } from './FirstPersonControls.js'
 
@@ -25,10 +24,6 @@ class Scene {
         /**
          * GUI
          */
-        this.gui = new dat.GUI({
-            closed: true
-        })
-
         this.parameters = {
             heloView: false
         }
@@ -50,15 +45,12 @@ class Scene {
         this.helo.lookAt(new THREE.Vector3(0, 0, 0))
         this.scene.add(this.helo)
 
-        this.gui.add(this.parameters, 'heloView').name('Helicopter View')
-
         /**
          * Controls
          */
         this.firstPersonControls = new FirstPersonControls(this.camera, this.canvas)
         this.firstPersonControls.enabled = true
-        this.firstPersonControls.lookSpeed = 0.0005
-
+        this.firstPersonControls.lookSpeed = 0.0000001
         /**
          * Setup renderer
          */

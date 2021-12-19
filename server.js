@@ -53,7 +53,7 @@ io.on('connection', function handleConnection (socket) {
      */
     users[socket.id] = {
         position: [0, 0, 0],
-        rotation: [0, 0, 0],
+        rotation: [0, getRandomNumber(0, 90), 0],
         color: getRandomColor()
     }
 

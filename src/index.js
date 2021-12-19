@@ -9,6 +9,13 @@ import gsap from 'gsap'
 const socket = io()
 
 /**
+ * Textures
+ */
+ const textureLoader = new THREE.TextureLoader()
+ const minecraftTexture = textureLoader.load('./static/minecraft.png')
+ 
+
+/**
  * Utilities
  */
 function getRandomGeometry() {
@@ -17,18 +24,26 @@ function getRandomGeometry() {
         return new THREE.Mesh(
             new THREE.BoxGeometry(0.2, 0.2, 0.2, 3, 3, 3),
             new THREE.MeshBasicMaterial({
-                wireframe: true
+                wireframe: false,
+                map: minecraftTexture
             })
         )
     } else {
         return new THREE.Mesh(
             new THREE.SphereGeometry(0.2, 8, 8),
             new THREE.MeshBasicMaterial({
-                wireframe: true
+                wireframe: false,
+                map: minecraftTexture
             })
         )
     }
 }
+/**
+ * Optimize texture
+ */
+minecraftTexture.generateMipmaps = false
+minecraftTexture.minFilter = THREE.NearestFilter
+minecraftTexture.magFilter = THREE.NearestFilter
 
 /**
  * Player scene
@@ -85,7 +100,7 @@ socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, us
             }
 
             userData[id].mesh.name = id
-            userData[id].mesh.material.color = new THREE.Color(users[id].color)
+            // userData[id].mesh.material.color = new THREE.Color(users[id].color)
             userData[id].mesh.position.set(...users[id].position)
             userData[id].mesh.rotation.set(...users[id].rotation)
             playerScene.scene.add(userData[id].mesh)
@@ -102,7 +117,7 @@ socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
     }
 
     userData[newUserId].mesh.name = newUserId
-    userData[newUserId].mesh.material.color = new THREE.Color(users[newUserId].color)
+    // userData[newUserId].mesh.material.color = new THREE.Color(users[newUserId].color)
     userData[newUserId].mesh.position.set(...users[newUserId].position)
     userData[newUserId].mesh.rotation.set(...users[newUserId].rotation)
     playerScene.scene.add(userData[newUserId].mesh)

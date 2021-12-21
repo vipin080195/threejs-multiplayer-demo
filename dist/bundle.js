@@ -44036,294 +44036,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 },{}],4:[function(require,module,exports){
 "use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.FirstPersonControls = void 0;
-
-var _three = require("three");
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _lookDirection = new _three.Vector3();
-
-var _spherical = new _three.Spherical();
-
-var _target = new _three.Vector3();
-
-var FirstPersonControls = _createClass(function FirstPersonControls(object, domElement) {
-  _classCallCheck(this, FirstPersonControls);
-
-  if (domElement === undefined) {
-    console.warn('THREE.FirstPersonControls: The second parameter "domElement" is now mandatory.');
-    domElement = document;
-  }
-
-  this.object = object;
-  this.domElement = domElement;
-  this.enabled = true;
-  this.movementSpeed = 1.0;
-  this.lookSpeed = 0.005;
-  this.lookVertical = true;
-  this.autoForward = false;
-  this.activeLook = true;
-  this.heightSpeed = false;
-  this.heightCoef = 1.0;
-  this.heightMin = 0.0;
-  this.heightMax = 1.0;
-  this.constrainVertical = false;
-  this.verticalMin = 0;
-  this.verticalMax = Math.PI;
-  this.mouseDragOn = false;
-  this.autoSpeedFactor = 0.0;
-  this.mouseX = 0;
-  this.mouseY = 0;
-  this.moveForward = false;
-  this.moveBackward = false;
-  this.moveLeft = false;
-  this.moveRight = false;
-  this.viewHalfX = 0;
-  this.viewHalfY = 0;
-  var lat = 0;
-  var lon = 0;
-
-  this.handleResize = function () {
-    if (this.domElement === document) {
-      this.viewHalfX = window.innerWidth / 2;
-      this.viewHalfY = window.innerHeight / 2;
-    } else {
-      this.viewHalfX = this.domElement.offsetWidth / 2;
-      this.viewHalfY = this.domElement.offsetHeight / 2;
-    }
-  };
-
-  this.onMouseDown = function (event) {
-    if (this.domElement !== document) {
-      this.domElement.focus();
-    }
-
-    if (this.activeLook) {
-      switch (event.button) {
-        case 0:
-          this.moveForward = true;
-          break;
-
-        case 2:
-          this.moveBackward = true;
-          break;
-      }
-    }
-
-    this.mouseDragOn = true;
-  };
-
-  this.onMouseUp = function (event) {
-    if (this.activeLook) {
-      switch (event.button) {
-        case 0:
-          this.moveForward = false;
-          break;
-
-        case 2:
-          this.moveBackward = false;
-          break;
-      }
-    }
-
-    this.mouseDragOn = false;
-  };
-
-  this.onMouseMove = function (event) {
-    if (this.domElement === document) {
-      this.mouseX = event.pageX - this.viewHalfX;
-      this.mouseY = event.pageY - this.viewHalfY;
-    } else {
-      this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
-      this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
-    }
-  };
-
-  this.onKeyDown = function (event) {
-    switch (event.code) {
-      case 'ArrowUp':
-      case 'KeyW':
-        this.moveForward = true;
-        break;
-
-      case 'ArrowLeft':
-      case 'KeyA':
-        this.moveLeft = true;
-        break;
-
-      case 'ArrowDown':
-      case 'KeyS':
-        this.moveBackward = true;
-        break;
-
-      case 'ArrowRight':
-      case 'KeyD':
-        this.moveRight = true;
-        break;
-
-      case 'KeyR':
-        this.moveUp = true;
-        break;
-
-      case 'KeyF':
-        this.moveDown = true;
-        break;
-    }
-  };
-
-  this.onKeyUp = function (event) {
-    switch (event.code) {
-      case 'ArrowUp':
-      case 'KeyW':
-        this.moveForward = false;
-        break;
-
-      case 'ArrowLeft':
-      case 'KeyA':
-        this.moveLeft = false;
-        break;
-
-      case 'ArrowDown':
-      case 'KeyS':
-        this.moveBackward = false;
-        break;
-
-      case 'ArrowRight':
-      case 'KeyD':
-        this.moveRight = false;
-        break;
-
-      case 'KeyR':
-        this.moveUp = false;
-        break;
-
-      case 'KeyF':
-        this.moveDown = false;
-        break;
-    }
-  };
-
-  this.lookAt = function (x, y, z) {
-    if (x.isVector3) {
-      _target.copy(x);
-    } else {
-      _target.set(x, y, z);
-    }
-
-    this.object.lookAt(_target);
-    setOrientation(this);
-    return this;
-  };
-
-  this.update = function () {
-    var targetPosition = new _three.Vector3();
-    return function update(delta) {
-      if (this.enabled === false) return;
-
-      if (this.heightSpeed) {
-        var y = _three.MathUtils.clamp(this.object.position.y, this.heightMin, this.heightMax);
-
-        var heightDelta = y - this.heightMin;
-        this.autoSpeedFactor = delta * (heightDelta * this.heightCoef);
-      } else {
-        this.autoSpeedFactor = 0.0;
-      }
-
-      var actualMoveSpeed = delta * this.movementSpeed;
-      if (this.moveForward || this.autoForward && !this.moveBackward) this.object.translateZ(-(actualMoveSpeed + this.autoSpeedFactor));
-      if (this.moveBackward) this.object.translateZ(actualMoveSpeed);
-      if (this.moveLeft) this.object.translateX(-actualMoveSpeed);
-      if (this.moveRight) this.object.translateX(actualMoveSpeed);
-      if (this.moveUp) this.object.translateY(actualMoveSpeed);
-      if (this.moveDown) this.object.translateY(-actualMoveSpeed);
-      var actualLookSpeed = delta * this.lookSpeed;
-
-      if (!this.activeLook) {
-        actualLookSpeed = 0;
-      }
-
-      var verticalLookRatio = 1;
-
-      if (this.constrainVertical) {
-        verticalLookRatio = Math.PI / (this.verticalMax - this.verticalMin);
-      }
-
-      lon -= this.mouseX * actualLookSpeed;
-      if (this.lookVertical) lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
-      lat = Math.max(-85, Math.min(85, lat));
-
-      var phi = _three.MathUtils.degToRad(90 - lat);
-
-      var theta = _three.MathUtils.degToRad(lon);
-
-      if (this.constrainVertical) {
-        phi = _three.MathUtils.mapLinear(phi, 0, Math.PI, this.verticalMin, this.verticalMax);
-      }
-
-      var position = this.object.position;
-      targetPosition.setFromSphericalCoords(1, phi, theta).add(position);
-      this.object.lookAt(targetPosition);
-    };
-  }();
-
-  this.dispose = function () {
-    this.domElement.removeEventListener('contextmenu', contextmenu);
-    this.domElement.removeEventListener('mousedown', _onMouseDown);
-    this.domElement.removeEventListener('mousemove', _onMouseMove);
-    this.domElement.removeEventListener('mouseup', _onMouseUp);
-    window.removeEventListener('keydown', _onKeyDown);
-    window.removeEventListener('keyup', _onKeyUp);
-  };
-
-  var _onMouseMove = this.onMouseMove.bind(this);
-
-  var _onMouseDown = this.onMouseDown.bind(this);
-
-  var _onMouseUp = this.onMouseUp.bind(this);
-
-  var _onKeyDown = this.onKeyDown.bind(this);
-
-  var _onKeyUp = this.onKeyUp.bind(this);
-
-  this.domElement.addEventListener('contextmenu', contextmenu);
-  this.domElement.addEventListener('mousemove', _onMouseMove);
-  this.domElement.addEventListener('mousedown', _onMouseDown);
-  this.domElement.addEventListener('mouseup', _onMouseUp);
-  window.addEventListener('keydown', _onKeyDown);
-  window.addEventListener('keyup', _onKeyUp);
-
-  function setOrientation(controls) {
-    var quaternion = controls.object.quaternion;
-
-    _lookDirection.set(0, 0, -1).applyQuaternion(quaternion);
-
-    _spherical.setFromVector3(_lookDirection);
-
-    lat = 90 - _three.MathUtils.radToDeg(_spherical.phi);
-    lon = _three.MathUtils.radToDeg(_spherical.theta);
-  }
-
-  this.handleResize();
-  setOrientation(this);
-});
-
-exports.FirstPersonControls = FirstPersonControls;
-
-function contextmenu(event) {
-  event.preventDefault();
-}
-
-},{"three":3}],5:[function(require,module,exports){
-"use strict";
-
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 Object.defineProperty(exports, "__esModule", {
@@ -45143,6 +44855,112 @@ var MapControls = function (_OrbitControls) {
 
 exports.MapControls = MapControls;
 
+},{"three":3}],5:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var THREE = _interopRequireWildcard(require("three"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var CharacterControls = function () {
+  function CharacterControls(camera, orbitControls) {
+    _classCallCheck(this, CharacterControls);
+
+    _defineProperty(this, "walkDirection", new THREE.Vector3());
+
+    _defineProperty(this, "rotateAxis", new THREE.Vector3(0, 1, 0));
+
+    _defineProperty(this, "rotateQuaternion", new THREE.Quaternion());
+
+    _defineProperty(this, "cameraTarget", new THREE.Vector3());
+
+    _defineProperty(this, "walkVelocity", 2);
+
+    this.camera = camera;
+    this.orbitControls = orbitControls;
+  }
+
+  _createClass(CharacterControls, [{
+    key: "getDirectionOffset",
+    value: function getDirectionOffset(controlKeys) {
+      var directionOffset = 0;
+
+      if (controlKeys.w) {
+        if (controlKeys.a) {
+          directionOffset = Math.PI / 4;
+        } else if (controlKeys.d) {
+          directionOffset = -(Math.PI / 4);
+        }
+      } else if (controlKeys.s) {
+        if (controlKeys.a) {
+          directionOffset = 3 * (Math.PI / 4);
+        } else if (controlKeys.d) {
+          directionOffset = -3 * (Math.PI / 4);
+        } else {
+          directionOffset = Math.PI;
+        }
+      } else if (controlKeys.a) {
+        directionOffset = Math.PI / 2;
+      } else if (controlKeys.d) {
+        directionOffset = -(Math.PI / 2);
+      }
+
+      return directionOffset;
+    }
+  }, {
+    key: "update",
+    value: function update(deltaTime, controlKeys, mesh) {
+      if (controlKeys.a || controlKeys.d || controlKeys.w || controlKeys.s) {
+        var angleYCameraDirection = Math.atan2(this.camera.position.x - mesh.position.x, this.camera.position.z - mesh.position.z);
+        var directionalOffset = this.getDirectionOffset(controlKeys);
+        this.rotateQuaternion.setFromAxisAngle(this.rotateAxis, angleYCameraDirection + directionalOffset);
+        mesh.quaternion.rotateTowards(this.rotateQuaternion, 0.1);
+        this.camera.getWorldPosition(this.walkDirection);
+        this.walkDirection.y = 0;
+        this.walkDirection.normalize();
+        this.walkDirection.applyAxisAngle(this.rotateAxis, directionalOffset);
+        var moveX = this.walkDirection.x * this.walkVelocity * deltaTime;
+        var moveZ = this.walkDirection.z * this.walkVelocity * deltaTime;
+        mesh.position.x += moveX;
+        mesh.position.z += moveZ;
+        this.updateCameraPosition(mesh, moveX, moveZ);
+      }
+    }
+  }, {
+    key: "updateCameraPosition",
+    value: function updateCameraPosition(mesh, moveX, moveZ) {
+      this.camera.position.x += moveX;
+      this.camera.position.z += moveZ;
+      this.cameraTarget.x = mesh.position.x;
+      this.cameraTarget.y = mesh.position.y + 1;
+      this.cameraTarget.z = mesh.position.z;
+      this.orbitControls.target = this.cameraTarget;
+    }
+  }]);
+
+  return CharacterControls;
+}();
+
+var _default = CharacterControls;
+exports["default"] = _default;
+
 },{"three":3}],6:[function(require,module,exports){
 "use strict";
 
@@ -45188,24 +45006,37 @@ var currentUser = undefined;
 var gui = new dat.GUI({
   closed: false
 });
+var clock = new THREE.Clock();
+
+function animate() {
+  if (currentUser != undefined) {
+    playerScene.characterControls.update(clock.getDelta(), playerScene.controlKeys, userData[currentUser].mesh);
+  }
+
+  playerScene.orbitControls.update();
+  playerScene.renderer.render(playerScene.scene, playerScene.camera);
+  window.requestAnimationFrame(function () {
+    animate();
+  });
+}
+
+animate();
 socket.on('renderOtherUsers', function handleRenderOtherUsers(currentUserId, users) {
   currentUser = currentUserId;
   Object.keys(users).forEach(function (id) {
-    if (id != currentUserId) {
-      var _userData$id$mesh$pos, _userData$id$mesh$rot;
+    var _userData$id$mesh$pos, _userData$id$mesh$rot;
 
-      userData[id] = {
-        mesh: getMesh()
-      };
-      userData[id].mesh.name = id;
-      userData[id].mesh.material.color = new THREE.Color(users[id].color);
+    userData[id] = {
+      mesh: getMesh()
+    };
+    userData[id].mesh.name = id;
+    userData[id].mesh.material.color = new THREE.Color(users[id].color);
 
-      (_userData$id$mesh$pos = userData[id].mesh.position).set.apply(_userData$id$mesh$pos, _toConsumableArray(users[id].position));
+    (_userData$id$mesh$pos = userData[id].mesh.position).set.apply(_userData$id$mesh$pos, _toConsumableArray(users[id].position));
 
-      (_userData$id$mesh$rot = userData[id].mesh.rotation).set.apply(_userData$id$mesh$rot, _toConsumableArray(users[id].rotation));
+    (_userData$id$mesh$rot = userData[id].mesh.rotation).set.apply(_userData$id$mesh$rot, _toConsumableArray(users[id].rotation));
 
-      playerScene.scene.add(userData[id].mesh);
-    }
+    playerScene.scene.add(userData[id].mesh);
   });
 });
 socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
@@ -45242,7 +45073,9 @@ var THREE = _interopRequireWildcard(require("three"));
 
 var _OrbitControls = require("./OrbitControls.js");
 
-var _FirstPersonControls = require("./FirstPersonControls.js");
+var _characterControls = _interopRequireDefault(require("./characterControls.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -45272,7 +45105,14 @@ var Scene = function () {
     this.parameters = {};
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
+    this.camera.position.set(0, 2, 3);
     this.scene.add(this.camera);
+    this.orbitControls = new _OrbitControls.OrbitControls(this.camera, this.canvas);
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.minDistance = 5;
+    this.orbitControls.maxDistance = 15;
+    this.orbitControls.enablePan = false;
+    this.orbitControls.maxPolarAngle = Math.PI / 2 - 0.05;
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true
@@ -45283,24 +45123,25 @@ var Scene = function () {
     this.renderer.setClearColor(new THREE.Color('#000000'));
     var gridHelper = new THREE.GridHelper(50, 50);
     this.scene.add(gridHelper);
-    this.clock = new THREE.Clock();
-    this.animate();
+    this.controlKeys = {
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    };
+    this.characterControls = new _characterControls["default"](this.camera, this.orbitControls);
     window.addEventListener('resize', function (e) {
       _this.handleResize(e);
+    });
+    window.addEventListener('keydown', function (e) {
+      _this.handleKeyDown(e);
+    });
+    window.addEventListener('keyup', function (e) {
+      _this.handleKeyUp(e);
     });
   }
 
   _createClass(Scene, [{
-    key: "animate",
-    value: function animate() {
-      var _this2 = this;
-
-      this.renderer.render(this.scene, this.camera);
-      window.requestAnimationFrame(function () {
-        _this2.animate();
-      });
-    }
-  }, {
     key: "handleResize",
     value: function handleResize(e) {
       this.sizes.width = window.innerWidth;
@@ -45310,6 +45151,27 @@ var Scene = function () {
       this.renderer.setSize(this.sizes.width, this.sizes.height);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     }
+  }, {
+    key: "handleKeyDown",
+    value: function handleKeyDown(e) {
+      var pressedKey = e.code.replace('Key', '').toLowerCase();
+
+      if (this.controlKeys[pressedKey] != undefined) {
+        this.controlKeys[pressedKey] = true;
+      }
+    }
+  }, {
+    key: "handleKeyUp",
+    value: function handleKeyUp(e) {
+      var pressedKey = e.code.replace('Key', '').toLowerCase();
+
+      if (this.controlKeys[pressedKey] != undefined) {
+        console.log(pressedKey);
+        this.controlKeys[pressedKey] = false;
+        this.controlKeys.a = false;
+        this.controlKeys.b = false;
+      }
+    }
   }]);
 
   return Scene;
@@ -45318,4 +45180,4 @@ var Scene = function () {
 var _default = Scene;
 exports["default"] = _default;
 
-},{"./FirstPersonControls.js":4,"./OrbitControls.js":5,"three":3}]},{},[6]);
+},{"./OrbitControls.js":4,"./characterControls.js":5,"three":3}]},{},[6]);

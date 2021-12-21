@@ -39,24 +39,47 @@ const gui = new dat.GUI({
     closed: false
 })
 
+/**
+ * Animation function
+ */
+const clock = new THREE.Clock()
+
+function animate() {
+    /**
+     * Controls update
+     */
+    if (currentUser != undefined) {
+        playerScene.characterControls.update(clock.getDelta(), playerScene.controlKeys, userData[currentUser].mesh)
+    }
+    playerScene.orbitControls.update()
+
+    playerScene.renderer.render(playerScene.scene, playerScene.camera)
+
+    window.requestAnimationFrame(() => {
+        animate()
+    })
+}
+animate()
 
 /**
- * Render other users
+ * Render all current users
  */
 socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, users) {
+    /**
+     * Capture current user ID
+     */
     currentUser = currentUserId
-    Object.keys(users).forEach((id) => {
-        if (id != currentUserId) {
-            userData[id] = {
-                mesh: getMesh()
-            }
 
-            userData[id].mesh.name = id
-            userData[id].mesh.material.color = new THREE.Color(users[id].color)
-            userData[id].mesh.position.set(...users[id].position)
-            userData[id].mesh.rotation.set(...users[id].rotation)
-            playerScene.scene.add(userData[id].mesh)
+    Object.keys(users).forEach((id) => {
+        userData[id] = {
+            mesh: getMesh()
         }
+
+        userData[id].mesh.name = id
+        userData[id].mesh.material.color = new THREE.Color(users[id].color)
+        userData[id].mesh.position.set(...users[id].position)
+        userData[id].mesh.rotation.set(...users[id].rotation)
+        playerScene.scene.add(userData[id].mesh)
     })
 })
 

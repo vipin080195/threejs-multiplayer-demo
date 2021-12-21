@@ -1,7 +1,8 @@
 import * as THREE from 'three'
-import { OrbitControls } from './OrbitControls.js'
-import CharacterControls from './characterControls.js'
 
+/**
+ * Setup the base of the scene and expose the animate function
+ */
 class Scene {
     constructor(
         canvas = document.querySelector('#webgl_handle'),
@@ -22,7 +23,7 @@ class Scene {
         }
 
         /**
-         * GUI
+         * GUI tweakable parameters for testing
          */
         this.parameters = {
             
@@ -34,7 +35,7 @@ class Scene {
         this.scene = new THREE.Scene()
 
         /**
-         * Setup camera
+         * Setup camera - FOV 70
          */
         this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
 
@@ -47,12 +48,6 @@ class Scene {
         /**
          * Controls
          */
-        this.orbitControls = new OrbitControls(this.camera, this.canvas)
-        this.orbitControls.enableDamping = true
-        this.orbitControls.minDistance = 5
-        this.orbitControls.maxDistance = 15
-        this.orbitControls.enablePan = false
-        this.orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
 
 
         /**
@@ -74,21 +69,6 @@ class Scene {
         this.scene.add(gridHelper)
 
         /**
-         * Control Keys
-         */
-        this.controlKeys = {
-            w: false,
-            a: false,
-            s: false,
-            d: false
-        }
-
-        /**
-         * Character controls
-         */
-        this.characterControls = new CharacterControls(this.camera, this.orbitControls)
-
-        /**
          * Handling events
          */
         window.addEventListener('resize', (e) => { this.handleResize(e) })
@@ -105,23 +85,6 @@ class Scene {
 
         this.renderer.setSize(this.sizes.width, this.sizes.height)
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    }
-
-    handleKeyDown(e) {
-        const pressedKey = e.code.replace('Key', '').toLowerCase()
-        if (this.controlKeys[pressedKey] != undefined) {
-            this.controlKeys[pressedKey] = true
-        }
-    }
-
-    handleKeyUp(e) {
-        const pressedKey = e.code.replace('Key', '').toLowerCase()
-        if (this.controlKeys[pressedKey] != undefined) {
-            console.log(pressedKey)
-            this.controlKeys[pressedKey] = false
-            this.controlKeys.a = false
-            this.controlKeys.b = false
-        }
     }
 }
 

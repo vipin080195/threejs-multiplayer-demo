@@ -45,14 +45,6 @@ const gui = new dat.GUI({
 const clock = new THREE.Clock()
 
 function animate() {
-    /**
-     * Controls update
-     */
-    if (currentUser != undefined) {
-        playerScene.characterControls.update(clock.getDelta(), playerScene.controlKeys, userData[currentUser].mesh)
-    }
-    playerScene.orbitControls.update()
-
     playerScene.renderer.render(playerScene.scene, playerScene.camera)
 
     window.requestAnimationFrame(() => {

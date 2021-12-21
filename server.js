@@ -13,10 +13,6 @@ function getRandomNumber(min, max) {
     return Math.floor(Math.random() * (max - min) + min)
 }
 
-function getRandomPosition() {
-    return [getRandomNumber(-3, 3), 0, getRandomNumber(-3, 3)]
-}
-
 function getRandomColor() {
     return `rgb(${getRandomNumber(0, 255)}, ${getRandomNumber(0, 255)}, ${getRandomNumber(0, 255)})`
 }
@@ -53,7 +49,7 @@ io.on('connection', function handleConnection (socket) {
      */
     users[socket.id] = {
         position: [0, 0, 0],
-        rotation: [0, getRandomNumber(0, 90), 0],
+        rotation: [0, 0, 0],
         color: getRandomColor()
     }
 
@@ -66,19 +62,6 @@ io.on('connection', function handleConnection (socket) {
      * Notify other users about new user
      */
     socket.broadcast.emit('renderNewUser', socket.id, users)
-
-    /**
-     * On user move, update positions in database and notify others
-     */
-    socket.on('moved', function handleMoved(newPosition) {
-        users[socket.id].position = newPosition
-
-        socket.broadcast.emit('updateUserPosition', socket.id, users[socket.id].position)
-    })
-
-    socket.on('animationTriggered', function handleTriggerAnimation(userId) {
-        socket.broadcast.emit('updateAnimation', userId)
-    })
 
     socket.on('disconnect', function handleDisconnect() {
         console.log(`User - ${socket.id} - disconnected`)

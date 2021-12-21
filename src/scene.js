@@ -25,7 +25,7 @@ class Scene {
          * GUI
          */
         this.parameters = {
-            heloView: false
+            
         }
 
         /**
@@ -36,21 +36,14 @@ class Scene {
         /**
          * Setup camera
          */
-        this.camera = new THREE.PerspectiveCamera(45, this.sizes.width / this.sizes.height, 0.1, 100)
+        this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
         this.scene.add(this.camera)
-
-        // Helicopter View
-        this.helo = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 100)
-        this.helo.position.y = 3
-        this.helo.lookAt(new THREE.Vector3(0, 0, 0))
-        this.scene.add(this.helo)
 
         /**
          * Controls
          */
-        this.firstPersonControls = new FirstPersonControls(this.camera, this.canvas)
-        this.firstPersonControls.enabled = true
-        this.firstPersonControls.lookSpeed = 0.0000001
+
+
         /**
          * Setup renderer
          */
@@ -62,6 +55,12 @@ class Scene {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         this.renderer.outputEncoding = THREE.sRGBEncoding
         this.renderer.setClearColor(new THREE.Color('#000000'))
+
+        /**
+         * Helpers
+         */
+        const gridHelper = new THREE.GridHelper(50, 50)
+        this.scene.add(gridHelper)
 
         /**
          * Animate
@@ -76,13 +75,7 @@ class Scene {
     }
 
     animate() {
-        this.firstPersonControls.update(this.clock.getDelta())
-
-        if (this.parameters.heloView) {
-            this.renderer.render(this.scene, this.helo)
-        } else {
-            this.renderer.render(this.scene, this.camera)
-        }
+        this.renderer.render(this.scene, this.camera)
 
         window.requestAnimationFrame(() => {
             this.animate()

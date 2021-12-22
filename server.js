@@ -6,17 +6,6 @@ const app = express()
 
 const PORT = 3000
 
-/**
- * Utilities
- */
-function getRandomNumber(min, max) {
-    return Math.floor(Math.random() * (max - min) + min)
-}
-
-function getRandomColor() {
-    return `rgb(${getRandomNumber(0, 255)}, ${getRandomNumber(0, 255)}, ${getRandomNumber(0, 255)})`
-}
-
 const server = http.createServer(app)
 const io = new Server(server)
 /**
@@ -33,36 +22,57 @@ app.set('view engine', 'ejs')
 app.use('/', express.static(__dirname + '/dist'))
 
 /**
- * Dummy Central Database
+ * Central Database
  */
-const users = {}
+const userData = {}
 
 /**
  * Setup Web Socket events
+ * Communication protocol - JSON
  */
 io.on('connection', function handleConnection (socket) {
     console.log(`User - ${socket.id} - connected`)
     console.log(`# of clients: ${io.engine.clientsCount}`)
 
     /**
-     * Assign co-ordinates to new user
+     * Provide user their ID
      */
-    users[socket.id] = {
-        position: [0, 0, 0],
-        rotation: [0, 0, 0],
-        color: getRandomColor()
-    }
+    socket.emit('setId', {
+        id: socket.id
+    })
 
     /**
-     * Notify new user about other users
+     * Client initial setup completed
+     * Record client information
      */
-    socket.emit('renderOtherUsers', socket.id, users)
+    socket.on('init', function handleInit(params) {
+        userData[socket.id] = {
+            model: params.model,
+            x: params.x,
+            y: params.y,
+            z: params.z,
+            h: params.h,
+            pb: params.pb
+        }
+    })
 
     /**
-     * Notify other users about new user
+     * Update information about user on client animate()
      */
-    socket.broadcast.emit('renderNewUser', socket.id, users)
+    socket.on('update', function handleUpdate(params) {
+        userData[socket.id] = {
+            model: params.model,
+            x: params.x,
+            y: params.y,
+            z: params.z,
+            h: params.h,
+            pb: params.pb
+        }
+    })
 
+    /**
+     * Notify users about a user disconnecting
+     */
     socket.on('disconnect', function handleDisconnect() {
         console.log(`User - ${socket.id} - disconnected`)
         console.log(`# of clients: ${io.engine.clientsCount}`)
@@ -70,18 +80,20 @@ io.on('connection', function handleConnection (socket) {
         /**
          * Clean up database
          */
-        delete users[socket.id]
+        delete userData[socket.id]
 
         /**
-         * Notify other users
+         * Notify others
          */
-        socket.broadcast.emit('userLeaving', socket.id)
+        socket.broadcast.emit('deleteUser', {
+            id: socket.id
+        })
     })
 })
 
 
 /**
- * Setup controllers
+ * Setup controllers to handle requests
  */
 app.get('/', (req, res) => {
     res.render('index.html')
@@ -93,3 +105,31 @@ app.get('/', (req, res) => {
  server.listen(PORT, () => {
     console.log(`Listening on Port: ${PORT}`)
 })
+
+/**
+ * Payload drop broadcast function - Every 40ms
+ * Replace with a database serving fresh data periodically
+ */
+setInterval(function payloadDropBroadcaster() {
+    // Payload to be broadcasted
+    const payload = []
+
+    Object.keys(userData).forEach((id) => {
+        // Use 
+        if (userData[id].model != undefined) {
+            payload.push({
+                id: id,
+                ...userData[id]
+            })
+        }
+    })
+
+    /**
+     * Dispatch payload
+     */
+    if (payload.length) {
+        io.emit('payloadDrop', {
+            payload: payload
+        })
+    }
+}, 40)

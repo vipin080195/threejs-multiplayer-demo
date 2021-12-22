@@ -23,31 +23,16 @@ class CharacterController {
          * TODO: Load models and Animations
          */
         // TODO: load an actual model
-        this.user = this.loadModelAndAnimations()
-        this.target = this.user.mesh
+        this.target = this.loadModelAndAnimations()
 
         /**
          * Instantiate controller input
          */
-        this.input = new CharacterControllerInput({
-            mesh: this.target
-        })
+        this.input = new CharacterControllerInput()
     }
 
     loadModelAndAnimations() {
-        const mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1, 3, 3, 3),
-            new THREE.MeshBasicMaterial()
-        )
-        mesh.name = this.params.id
 
-        /**
-         * Return relevant data
-         */
-        return {
-            mesh: mesh,
-            model: 'Cube',
-        }
     }
 
     update(deltaTime) {
@@ -80,7 +65,7 @@ class CharacterController {
         /**
          * Find move velocity
          */
-        if (this.input.controlKeys.w) { 
+        if (this.input.controlKeys.w) {
             velocity.z += this.acceleration.z * deltaTime
         } else if (this.input.controlKeys.s) {
             velocity.z -= this.acceleration.z * deltaTime
@@ -121,6 +106,8 @@ class CharacterController {
 
         this.target.position.add(forward)
         this.target.position.add(sideways)
+
+        // console.log(this.velocity)
     }
 }
 

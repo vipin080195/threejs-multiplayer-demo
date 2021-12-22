@@ -10,28 +10,24 @@ import ThirdPersonCamera from './thirdPersonCamera'
  */
 const socket = io()
 
-
 /**
- * Utilities
+ * GUI - for tweaking parameters
  */
-function getMesh() {
-    return new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1, 1, 3, 3, 3),
-        new THREE.MeshBasicMaterial({
-            wireframe: false
-        })
-    )
-}
+ const gui = new dat.GUI({
+    closed: false
+})
 
 /**
- * Player scene
+ * Setup player local environment
  */
 const playerScene = new Scene()
 
 /**
- * Local Data
+ * Player local data
  */
-const userData = {}
+const remoteData = {}
+const renderedUsers = {}
+let currentUserId = undefined
 let currentUser = undefined
 
 /**
@@ -39,14 +35,6 @@ let currentUser = undefined
  */
 let characterController = undefined
 let thirdPersonCamera = undefined
-
-
-/**
- * GUI
- */
-const gui = new dat.GUI({
-    closed: false
-})
 
 /**
  * Animation function
@@ -57,9 +45,26 @@ function animate() {
     /**
      * Update controls
      */
-    if (currentUser != undefined) {
+    if (currentUserId != undefined) {
         characterController.update(clock.getDelta())
-        thirdPersonCamera.update(clock.getElapsedTime())
+        thirdPersonCamera.update()
+
+        socket.emit('update', {
+            id: currentUserId,
+            model: currentUser.model,
+            x: currentUser.mesh.position.x,
+            y: currentUser.mesh.position.y,
+            z: currentUser.mesh.position.z,
+            h: currentUser.mesh.rotation.y,
+            pb: currentUser.mesh.rotation.x
+        })
+    }
+
+    /**
+     * Update other users
+     */
+    if (renderedUsers) {
+        updateUsers(0.1)
     }
 
     /**
@@ -74,57 +79,77 @@ function animate() {
 animate()
 
 /**
- * Render all current users
+ * Web socket communication with server
  */
-socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, users) {
-    /**
-     * Capture current user ID
-     */
-    currentUser = currentUserId
 
-    Object.keys(users).forEach((id) => {
-        userData[id] = {
-            mesh: getMesh()
-        }
-
-        userData[id].mesh.name = id
-        userData[id].mesh.material.color = new THREE.Color(users[id].color)
-        userData[id].mesh.position.set(...users[id].position)
-        userData[id].mesh.rotation.set(...users[id].rotation)
-        playerScene.scene.add(userData[id].mesh)
-    })
+/**
+ * Gather user socket ID
+ */
+socket.on('setId', function handleSetId(params) {
+    currentUserId = params.id
 
     /**
-     * Setup controller for the current user
+     * Initialize Character and Camera
      */
     characterController = new CharacterController({
-        mesh: userData[currentUserId].mesh
+        id: currentUserId
     })
+
+    /**
+     * Load model and animations and add it to the scene
+     */
+    currentUser = characterController.user
+    playerScene.scene.add(currentUser.mesh)
+
+    /**
+     * Instantiate 3ps camera
+     */
     thirdPersonCamera = new ThirdPersonCamera({
         camera: playerScene.camera,
-        mesh: userData[currentUserId].mesh
+        mesh: currentUser.mesh
+    })
+
+    socket.emit('init', currentUser)
+})
+
+/**
+ * Update local data with payloadDrop
+ */
+socket.on('payloadDrop', function handlePayloadDrop(params) {
+    params.payload.forEach((user) => {
+        if (user.id != currentUserId) {
+            /**
+             * Store payload
+             */
+            remoteData[user.id] = user
+
+            /**
+             * Render if new user
+             */
+            if (renderedUsers[user.id] == undefined) {
+                renderedUsers[user.id] = new CharacterController({id: user.id}).target
+                playerScene.scene.add(renderedUsers[user.id])
+            }
+        }
     })
 })
 
+function updateUsers(deltaTime) {
+    Object.keys(renderedUsers).forEach((id) => {
+        const mesh = renderedUsers[id]
+        mesh.rotation.x = remoteData[id].pb
+        mesh.rotation.y = remoteData[id].h
+        mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime)
+    })
+}
+
 /**
- * Render the new user
+ * Delete user that disconnected
  */
-socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
-    userData[newUserId] = {
-        mesh: getMesh()
+socket.on('deleteUser', function handleDeleteUser(params) {
+    if (remoteData[params.id]) {
+        playerScene.scene.remove(renderedUsers[params.id])
+        delete renderedUsers[params.id]
+        delete remoteData[params.id]
     }
-
-    userData[newUserId].mesh.name = newUserId
-    userData[newUserId].mesh.material.color = new THREE.Color(users[newUserId].color)
-    userData[newUserId].mesh.position.set(...users[newUserId].position)
-    userData[newUserId].mesh.rotation.set(...users[newUserId].rotation)
-    playerScene.scene.add(userData[newUserId].mesh)
-})
-
-/**
- * Remove user that left
- */
-socket.on('userLeaving', function handleUserLeaving(userId) {
-    playerScene.scene.remove(userData[userId].mesh)
-    delete userData[userId]
 })

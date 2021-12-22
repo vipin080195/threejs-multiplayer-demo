@@ -38,7 +38,6 @@ class Scene {
          * Setup camera - FOV 70
          */
         this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
-        this.camera.position.set(0, 2, 3)
 
 
         /**
@@ -56,10 +55,13 @@ class Scene {
         /**
          * Helpers
          */
-        const gridHelper = new THREE.GridHelper(50, 50)
+        const gridHelper = new THREE.GridHelper(100, 100)
         this.scene.add(gridHelper)
-
         
+        /**
+         * Handlers
+         */
+        window.addEventListener('resize', (e) => { this.handleResize(e) })
     }
 
     handleResize(e) {

@@ -44069,8 +44069,21 @@ var CharacterController = function () {
       this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
       this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
       this.velocity = new THREE.Vector3();
-      this.input = new CharacterControllerInput(this.params.socket);
-      this.target = params.mesh;
+      this.user = this.loadModelAndAnimations();
+      this.target = this.user.mesh;
+      this.input = new CharacterControllerInput({
+        mesh: this.target
+      });
+    }
+  }, {
+    key: "loadModelAndAnimations",
+    value: function loadModelAndAnimations() {
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1, 3, 3, 3), new THREE.MeshBasicMaterial());
+      mesh.name = this.params.id;
+      return {
+        mesh: mesh,
+        model: 'Cube'
+      };
     }
   }, {
     key: "update",
@@ -44122,11 +44135,13 @@ var CharacterController = function () {
 }();
 
 var CharacterControllerInput = function () {
-  function CharacterControllerInput() {
+  function CharacterControllerInput(params) {
     var _this = this;
 
     _classCallCheck(this, CharacterControllerInput);
 
+    this.params = params;
+    this.target = params.mesh;
     this.controlKeys = {
       w: false,
       a: false,
@@ -44218,40 +44233,36 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 var socket = io();
-
-function getMesh() {
-  return new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1, 3, 3, 3), new THREE.MeshBasicMaterial({
-    wireframe: false
-  }));
-}
-
-var playerScene = new _scene["default"]();
-var userData = {};
-var currentUser = undefined;
-var characterController = undefined;
-var thirdPersonCamera = undefined;
 var gui = new dat.GUI({
   closed: false
 });
+var playerScene = new _scene["default"]();
+var remoteData = {};
+var renderedUsers = {};
+var currentUserId = undefined;
+var currentUser = undefined;
+var characterController = undefined;
+var thirdPersonCamera = undefined;
 var clock = new THREE.Clock();
 
 function animate() {
-  if (currentUser != undefined) {
+  if (currentUserId != undefined) {
     characterController.update(clock.getDelta());
-    thirdPersonCamera.update(clock.getElapsedTime());
+    thirdPersonCamera.update();
+    socket.emit('update', {
+      id: currentUserId,
+      model: currentUser.model,
+      x: currentUser.mesh.position.x,
+      y: currentUser.mesh.position.y,
+      z: currentUser.mesh.position.z,
+      h: currentUser.mesh.rotation.y,
+      pb: currentUser.mesh.rotation.x
+    });
+  }
+
+  if (renderedUsers) {
+    updateUsers(0.1);
   }
 
   playerScene.renderer.render(playerScene.scene, playerScene.camera);
@@ -44261,49 +44272,49 @@ function animate() {
 }
 
 animate();
-socket.on('renderOtherUsers', function handleRenderOtherUsers(currentUserId, users) {
-  currentUser = currentUserId;
-  Object.keys(users).forEach(function (id) {
-    var _userData$id$mesh$pos, _userData$id$mesh$rot;
-
-    userData[id] = {
-      mesh: getMesh()
-    };
-    userData[id].mesh.name = id;
-    userData[id].mesh.material.color = new THREE.Color(users[id].color);
-
-    (_userData$id$mesh$pos = userData[id].mesh.position).set.apply(_userData$id$mesh$pos, _toConsumableArray(users[id].position));
-
-    (_userData$id$mesh$rot = userData[id].mesh.rotation).set.apply(_userData$id$mesh$rot, _toConsumableArray(users[id].rotation));
-
-    playerScene.scene.add(userData[id].mesh);
-  });
+socket.on('setId', function handleSetId(params) {
+  currentUserId = params.id;
   characterController = new _characterController["default"]({
-    mesh: userData[currentUserId].mesh
+    id: currentUserId
   });
+  currentUser = characterController.user;
+  playerScene.scene.add(currentUser.mesh);
   thirdPersonCamera = new _thirdPersonCamera["default"]({
     camera: playerScene.camera,
-    mesh: userData[currentUserId].mesh
+    mesh: currentUser.mesh
+  });
+  socket.emit('init', currentUser);
+});
+socket.on('payloadDrop', function handlePayloadDrop(params) {
+  params.payload.forEach(function (user) {
+    if (user.id != currentUserId) {
+      remoteData[user.id] = user;
+
+      if (renderedUsers[user.id] == undefined) {
+        renderedUsers[user.id] = new _characterController["default"]({
+          id: user.id
+        }).target;
+        playerScene.scene.add(renderedUsers[user.id]);
+      }
+    }
   });
 });
-socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
-  var _userData$newUserId$m, _userData$newUserId$m2;
 
-  userData[newUserId] = {
-    mesh: getMesh()
-  };
-  userData[newUserId].mesh.name = newUserId;
-  userData[newUserId].mesh.material.color = new THREE.Color(users[newUserId].color);
+function updateUsers(deltaTime) {
+  Object.keys(renderedUsers).forEach(function (id) {
+    var mesh = renderedUsers[id];
+    mesh.rotation.x = remoteData[id].pb;
+    mesh.rotation.y = remoteData[id].h;
+    mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime);
+  });
+}
 
-  (_userData$newUserId$m = userData[newUserId].mesh.position).set.apply(_userData$newUserId$m, _toConsumableArray(users[newUserId].position));
-
-  (_userData$newUserId$m2 = userData[newUserId].mesh.rotation).set.apply(_userData$newUserId$m2, _toConsumableArray(users[newUserId].rotation));
-
-  playerScene.scene.add(userData[newUserId].mesh);
-});
-socket.on('userLeaving', function handleUserLeaving(userId) {
-  playerScene.scene.remove(userData[userId].mesh);
-  delete userData[userId];
+socket.on('deleteUser', function handleDeleteUser(params) {
+  if (remoteData[params.id]) {
+    playerScene.scene.remove(renderedUsers[params.id]);
+    delete renderedUsers[params.id];
+    delete remoteData[params.id];
+  }
 });
 
 },{"./characterController.js":4,"./scene.js":6,"./thirdPersonCamera":7,"dat.gui":1,"gsap":2,"three":3}],6:[function(require,module,exports){
@@ -44330,6 +44341,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 var Scene = function () {
   function Scene() {
+    var _this = this;
+
     var canvas = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.querySelector('#webgl_handle');
     var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window.innerWidth;
     var height = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window.innerHeight;
@@ -44344,7 +44357,6 @@ var Scene = function () {
     this.parameters = {};
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
-    this.camera.position.set(0, 2, 3);
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true
@@ -44353,8 +44365,11 @@ var Scene = function () {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setClearColor(new THREE.Color('#000000'));
-    var gridHelper = new THREE.GridHelper(50, 50);
+    var gridHelper = new THREE.GridHelper(100, 100);
     this.scene.add(gridHelper);
+    window.addEventListener('resize', function (e) {
+      _this.handleResize(e);
+    });
   }
 
   _createClass(Scene, [{

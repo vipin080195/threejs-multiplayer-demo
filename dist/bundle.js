@@ -44069,7 +44069,7 @@ var CharacterController = function () {
       this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
       this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
       this.velocity = new THREE.Vector3();
-      this.input = new CharacterControllerInput();
+      this.input = new CharacterControllerInput(this.params.socket);
       this.target = params.mesh;
     }
   }, {
@@ -44255,6 +44255,7 @@ var clock = new THREE.Clock();
 function animate() {
   if (currentUser != undefined) {
     characterController.update(clock.getDelta());
+    thirdPersonCamera.update(clock.getElapsedTime());
   }
 
   playerScene.renderer.render(playerScene.scene, playerScene.camera);
@@ -44407,25 +44408,35 @@ var ThirdPersonCamera = function () {
     this.params = params;
     this.camera = params.camera;
     this.target = params.mesh;
-    this.backCamera = new THREE.Object3D();
-    this.backCamera.position.set(0, 2, -3);
-    this.backCamera.parent = this.target;
-    this.backCameraPosition = new THREE.Vector3();
-    this.idealLookAt = new THREE.Vector3();
+    this.currentPosition = new THREE.Vector3();
+    this.currentLookAt = new THREE.Vector3();
   }
 
   _createClass(ThirdPersonCamera, [{
     key: "update",
-    value: function update(deltaTime) {
-      if (this.target == undefined) {
-        return;
-      }
-
-      this.backCamera.getWorldPosition(this.backCameraPosition);
-      this.camera.position.lerp(this.backCameraPosition, deltaTime);
-      this.idealLookAt.copy(this.target.position);
-      this.idealLookAt.y += 0.5;
-      this.camera.lookAt(this.idealLookAt);
+    value: function update(timeElapsed) {
+      var idealOffset = this.calculateIdealOffset();
+      var idealLookAt = this.calculateIdealLookAt();
+      this.currentPosition.lerp(idealOffset, 0.1);
+      this.currentLookAt.lerp(idealLookAt, 0.1);
+      this.camera.position.copy(this.currentPosition);
+      this.camera.lookAt(this.currentLookAt);
+    }
+  }, {
+    key: "calculateIdealOffset",
+    value: function calculateIdealOffset() {
+      var idealOffset = new THREE.Vector3(0, 2, -3);
+      idealOffset.applyQuaternion(this.target.quaternion);
+      idealOffset.add(this.target.position);
+      return idealOffset;
+    }
+  }, {
+    key: "calculateIdealLookAt",
+    value: function calculateIdealLookAt() {
+      var idealLookAt = new THREE.Vector3(0, 1, 5);
+      idealLookAt.applyQuaternion(this.target.quaternion);
+      idealLookAt.add(this.target.position);
+      return idealLookAt;
     }
   }]);
 

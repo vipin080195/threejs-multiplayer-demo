@@ -12,14 +12,13 @@ class CharacterController {
          * Initial values & constants
          */
         this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5)
-        // this.decceleration = new THREE.Vector3(-2.0, -2.0, -2.0)
         this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0)
         this.velocity = new THREE.Vector3()
 
         /**
          * Instantiate controller input
          */
-        this.input = new CharacterControllerInput()
+        this.input = new CharacterControllerInput(this.params.socket)
 
         /**
          * TODO: Instantiate FSM
@@ -137,7 +136,7 @@ class CharacterControllerInput {
             case 'w':
                 this.controlKeys.w = true
                 break
-            case 'a': 
+            case 'a':
                 this.controlKeys.a = true
                 break
             case 's':

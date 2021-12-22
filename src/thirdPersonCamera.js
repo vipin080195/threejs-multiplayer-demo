@@ -6,34 +6,40 @@ class ThirdPersonCamera {
         this.camera = params.camera
         this.target = params.mesh
 
-        /**
-         * Setup back camera and make target it's parent
-         */
-        this.backCamera = new THREE.Object3D()
-        this.backCamera.position.set(0, 2, -3)
-        this.backCamera.parent = this.target
-
-        this.backCameraPosition = new THREE.Vector3()
-        this.idealLookAt = new THREE.Vector3()
+        this.currentPosition = new THREE.Vector3()
+        this.currentLookAt = new THREE.Vector3()
     }
 
-    update(deltaTime) {
-        if (this.target == undefined) {
-            return
-        }
+    update(timeElapsed) {
+        /**
+         * idealOffset - How far away from the target
+         * idealLookAt - In which direction to look
+         */
+        const idealOffset = this.calculateIdealOffset()
+        const idealLookAt = this.calculateIdealLookAt()
 
         /**
-         * Move render camera to back camera
+         * TODO - Remove hard coded values
          */
-        this.backCamera.getWorldPosition(this.backCameraPosition)
-        this.camera.position.lerp(this.backCameraPosition, deltaTime)
+        this.currentPosition.lerp(idealOffset, 0.1)
+        this.currentLookAt.lerp(idealLookAt, 0.1)
 
-        /**
-         * Set ideal viewing direction for the camera
-         */
-        this.idealLookAt.copy(this.target.position)
-        this.idealLookAt.y += 0.5
-        this.camera.lookAt(this.idealLookAt)
+        this.camera.position.copy(this.currentPosition)
+        this.camera.lookAt(this.currentLookAt)
+    }
+
+    calculateIdealOffset() {
+        const idealOffset = new THREE.Vector3(0, 2, -3)
+        idealOffset.applyQuaternion(this.target.quaternion)
+        idealOffset.add(this.target.position)
+        return idealOffset
+    }
+
+    calculateIdealLookAt() {
+        const idealLookAt = new THREE.Vector3(0, 1, 5)
+        idealLookAt.applyQuaternion(this.target.quaternion)
+        idealLookAt.add(this.target.position)
+        return idealLookAt
     }
 }
 

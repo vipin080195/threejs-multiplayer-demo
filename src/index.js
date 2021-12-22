@@ -9,7 +9,7 @@ import ThirdPersonCamera from './thirdPersonCamera'
  * Setup Socket.io-client
  */
 const socket = io()
- 
+
 
 /**
  * Utilities
@@ -59,6 +59,7 @@ function animate() {
      */
     if (currentUser != undefined) {
         characterController.update(clock.getDelta())
+        thirdPersonCamera.update(clock.getElapsedTime())
     }
 
     /**

@@ -82,11 +82,11 @@ function animate() {
 animate()
 
 /**
- * Web socket communication with server
+ *  ------ Web socket communication with server -----
  */
 
 /**
- * Gather user socket ID
+ * Initial setup for user
  */
 socket.on('setId', function handleSetId(params) {
     /**
@@ -134,21 +134,15 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
              * Render if new user
              */
             if (renderedUsers[user.id] == undefined) {
-                renderedUsers[user.id] = new character({id: user.id}).target
+                renderedUsers[user.id] = new character({
+                    id: user.id,
+                    isControllable: false
+                }).target
                 playerScene.scene.add(renderedUsers[user.id])
             }
         }
     })
 })
-
-function updateUsers(deltaTime) {
-    Object.keys(renderedUsers).forEach((id) => {
-        const mesh = renderedUsers[id]
-        mesh.rotation.x = remoteData[id].pb
-        mesh.rotation.y = remoteData[id].h
-        mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime)
-    })
-}
 
 /**
  * Delete user that disconnected
@@ -160,3 +154,15 @@ socket.on('deleteUser', function handleDeleteUser(params) {
         delete remoteData[params.id]
     }
 })
+
+/**
+ * Update other users' co-ordinates
+ */
+ function updateUsers(deltaTime) {
+    Object.keys(renderedUsers).forEach((id) => {
+        const mesh = renderedUsers[id]
+        mesh.rotation.x = remoteData[id].pb
+        mesh.rotation.y = remoteData[id].h
+        mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime)
+    })
+}

@@ -65,13 +65,9 @@ class CharacterController {
          * Find move velocity
          */
         if (this.input.controlKeys.w) {
-            if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
-                velocity.z += this.acceleration.z * deltaTime
-            }
+            velocity.z += this.acceleration.z * deltaTime
         } else if (this.input.controlKeys.s) {
-            if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
-                velocity.z -= this.acceleration.z * deltaTime
-            }
+            velocity.z -= this.acceleration.z * deltaTime
         }
 
         /**

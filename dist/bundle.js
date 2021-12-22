@@ -44089,13 +44089,9 @@ var CharacterController = function () {
       velocity.add(frameDecceleration);
 
       if (this.input.controlKeys.w) {
-        if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
-          velocity.z += this.acceleration.z * deltaTime;
-        }
+        velocity.z += this.acceleration.z * deltaTime;
       } else if (this.input.controlKeys.s) {
-        if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
-          velocity.z -= this.acceleration.z * deltaTime;
-        }
+        velocity.z -= this.acceleration.z * deltaTime;
       }
 
       if (this.input.controlKeys.a) {
@@ -44425,7 +44421,7 @@ var ThirdPersonCamera = function () {
   }, {
     key: "calculateIdealOffset",
     value: function calculateIdealOffset() {
-      var idealOffset = new THREE.Vector3(0, 2, -3);
+      var idealOffset = new THREE.Vector3(0, 2, -4);
       idealOffset.applyQuaternion(this.target.quaternion);
       idealOffset.add(this.target.position);
       return idealOffset;

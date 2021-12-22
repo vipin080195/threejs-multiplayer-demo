@@ -11,10 +11,10 @@ class CharacterController {
         /**
          * Initial values & constants
          */
-        this.moveAcceleration = 0.1
-        this.rotationAccelaration = 0.05
-        this.velocity = 0.0
-
+        this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5)
+        // this.decceleration = new THREE.Vector3(-2.0, -2.0, -2.0)
+        this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0)
+        this.velocity = new THREE.Vector3()
 
         /**
          * Instantiate controller input
@@ -43,27 +43,46 @@ class CharacterController {
         /**
          * Pull target position and rotation
          */
+        const velocity = this.velocity
+
         const rotationOffset = new THREE.Quaternion()
         const rotationAxis = new THREE.Vector3(0, 1, 0)
         const targetRotation = this.target.quaternion.clone()
 
         /**
+         * Auto deccelerate every frame
+         */
+        const frameDecceleration = new THREE.Vector3(
+            velocity.x * this.decceleration.x,
+            velocity.y * this.decceleration.y,
+            velocity.z * this.decceleration.z
+        )
+        frameDecceleration.multiplyScalar(deltaTime)
+        frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z))
+
+        velocity.add(frameDecceleration)
+
+        /**
          * Find move velocity
          */
         if (this.input.controlKeys.w) {
-            this.velocity += this.moveAcceleration * deltaTime
+            if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
+                velocity.z += this.acceleration.z * deltaTime
+            }
         } else if (this.input.controlKeys.s) {
-            this.velocity -= this.moveAcceleration * deltaTime
+            if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
+                velocity.z -= this.acceleration.z * deltaTime
+            }
         }
 
         /**
          * Find rotation
          */
         if (this.input.controlKeys.a) {
-            rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * Math.PI * deltaTime * this.rotationAccelaration)
+            rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * Math.PI * deltaTime * this.acceleration.y)
             targetRotation.multiply(rotationOffset)
         } else if (this.input.controlKeys.d) {
-            rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * -Math.PI * deltaTime * this.rotationAccelaration)
+            rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * -Math.PI * deltaTime * this.acceleration.y)
             targetRotation.multiply(rotationOffset)
         }
 
@@ -72,9 +91,27 @@ class CharacterController {
          */
         this.target.quaternion.copy(targetRotation)
 
-        // const oldPosition = new THREE.Vector3()
-        // oldPosition.copy(this.target.position)
+        const oldPosition = new THREE.Vector3()
+        oldPosition.copy(this.target.position)
 
+        /**
+         * Apply rotation depending on orientation
+         */
+        const forward = new THREE.Vector3(0, 0, 1)
+        forward.applyQuaternion(this.target.quaternion)
+        forward.normalize()
+
+        const sideways = new THREE.Vector3(1, 0, 0)
+        sideways.applyQuaternion(this.target.quaternion)
+        sideways.normalize()
+
+        forward.multiplyScalar(velocity.z * deltaTime)
+        sideways.multiplyScalar(velocity.x * deltaTime)
+
+        this.target.position.add(forward)
+        this.target.position.add(sideways)
+
+        // console.log(this.velocity)
     }
 }
 

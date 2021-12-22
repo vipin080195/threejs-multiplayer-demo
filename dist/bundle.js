@@ -44066,9 +44066,9 @@ var CharacterController = function () {
     key: "init",
     value: function init(params) {
       this.params = params;
-      this.moveAcceleration = 0.1;
-      this.rotationAccelaration = 0.05;
-      this.velocity = 0.0;
+      this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
+      this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
+      this.velocity = new THREE.Vector3();
       this.input = new CharacterControllerInput();
       this.target = params.mesh;
     }
@@ -44079,25 +44079,46 @@ var CharacterController = function () {
         return;
       }
 
+      var velocity = this.velocity;
       var rotationOffset = new THREE.Quaternion();
       var rotationAxis = new THREE.Vector3(0, 1, 0);
       var targetRotation = this.target.quaternion.clone();
+      var frameDecceleration = new THREE.Vector3(velocity.x * this.decceleration.x, velocity.y * this.decceleration.y, velocity.z * this.decceleration.z);
+      frameDecceleration.multiplyScalar(deltaTime);
+      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      velocity.add(frameDecceleration);
 
       if (this.input.controlKeys.w) {
-        this.velocity += this.moveAcceleration * deltaTime;
+        if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
+          velocity.z += this.acceleration.z * deltaTime;
+        }
       } else if (this.input.controlKeys.s) {
-        this.velocity -= this.moveAcceleration * deltaTime;
+        if (Math.abs(velocity.z + this.acceleration.z * deltaTime) > 3.0) {} else {
+          velocity.z -= this.acceleration.z * deltaTime;
+        }
       }
 
       if (this.input.controlKeys.a) {
-        rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * Math.PI * deltaTime * this.rotationAccelaration);
+        rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * Math.PI * deltaTime * this.acceleration.y);
         targetRotation.multiply(rotationOffset);
       } else if (this.input.controlKeys.d) {
-        rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * -Math.PI * deltaTime * this.rotationAccelaration);
+        rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * -Math.PI * deltaTime * this.acceleration.y);
         targetRotation.multiply(rotationOffset);
       }
 
       this.target.quaternion.copy(targetRotation);
+      var oldPosition = new THREE.Vector3();
+      oldPosition.copy(this.target.position);
+      var forward = new THREE.Vector3(0, 0, 1);
+      forward.applyQuaternion(this.target.quaternion);
+      forward.normalize();
+      var sideways = new THREE.Vector3(1, 0, 0);
+      sideways.applyQuaternion(this.target.quaternion);
+      sideways.normalize();
+      forward.multiplyScalar(velocity.z * deltaTime);
+      sideways.multiplyScalar(velocity.x * deltaTime);
+      this.target.position.add(forward);
+      this.target.position.add(sideways);
     }
   }]);
 

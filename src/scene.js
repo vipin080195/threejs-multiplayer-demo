@@ -43,7 +43,6 @@ class Scene {
          * Setup camera for third person view
          */
         this.camera.position.set(0, 2, 3)
-        this.scene.add(this.camera)
 
         /**
          * Controls

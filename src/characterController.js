@@ -14,12 +14,17 @@ class CharacterController {
         this.input = new CharacterControllerInput()
 
         /**
-         * Instantiate FSM
+         * TODO: Instantiate FSM
          */
 
         /**
          * TODO: Load models and Animations
          */
+
+        /**
+         * Set target
+         */
+        this.target = params.mesh
     }
 }
 
@@ -75,3 +80,5 @@ class CharacterControllerInput {
         }
     }
 }
+
+export default CharacterController

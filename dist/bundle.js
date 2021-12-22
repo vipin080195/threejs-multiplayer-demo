@@ -44038,934 +44038,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.OrbitControls = exports.MapControls = void 0;
-
-var _three = require("three");
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } Object.defineProperty(subClass, "prototype", { value: Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }), writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var _changeEvent = {
-  type: 'change'
-};
-var _startEvent = {
-  type: 'start'
-};
-var _endEvent = {
-  type: 'end'
-};
-
-var OrbitControls = function (_EventDispatcher) {
-  _inherits(OrbitControls, _EventDispatcher);
-
-  var _super = _createSuper(OrbitControls);
-
-  function OrbitControls(object, domElement) {
-    var _this;
-
-    _classCallCheck(this, OrbitControls);
-
-    _this = _super.call(this);
-    if (domElement === undefined) console.warn('THREE.OrbitControls: The second parameter "domElement" is now mandatory.');
-    if (domElement === document) console.error('THREE.OrbitControls: "document" should not be used as the target "domElement". Please use "renderer.domElement" instead.');
-    _this.object = object;
-    _this.domElement = domElement;
-    _this.domElement.style.touchAction = 'none';
-    _this.enabled = true;
-    _this.target = new _three.Vector3();
-    _this.minDistance = 0;
-    _this.maxDistance = Infinity;
-    _this.minZoom = 0;
-    _this.maxZoom = Infinity;
-    _this.minPolarAngle = 0;
-    _this.maxPolarAngle = Math.PI;
-    _this.minAzimuthAngle = -Infinity;
-    _this.maxAzimuthAngle = Infinity;
-    _this.enableDamping = false;
-    _this.dampingFactor = 0.05;
-    _this.enableZoom = true;
-    _this.zoomSpeed = 1.0;
-    _this.enableRotate = true;
-    _this.rotateSpeed = 1.0;
-    _this.enablePan = true;
-    _this.panSpeed = 1.0;
-    _this.screenSpacePanning = true;
-    _this.keyPanSpeed = 7.0;
-    _this.autoRotate = false;
-    _this.autoRotateSpeed = 2.0;
-    _this.keys = {
-      LEFT: 'ArrowLeft',
-      UP: 'ArrowUp',
-      RIGHT: 'ArrowRight',
-      BOTTOM: 'ArrowDown'
-    };
-    _this.mouseButtons = {
-      LEFT: _three.MOUSE.ROTATE,
-      MIDDLE: _three.MOUSE.DOLLY,
-      RIGHT: _three.MOUSE.PAN
-    };
-    _this.touches = {
-      ONE: _three.TOUCH.ROTATE,
-      TWO: _three.TOUCH.DOLLY_PAN
-    };
-    _this.target0 = _this.target.clone();
-    _this.position0 = _this.object.position.clone();
-    _this.zoom0 = _this.object.zoom;
-    _this._domElementKeyEvents = null;
-
-    _this.getPolarAngle = function () {
-      return spherical.phi;
-    };
-
-    _this.getAzimuthalAngle = function () {
-      return spherical.theta;
-    };
-
-    _this.getDistance = function () {
-      return this.object.position.distanceTo(this.target);
-    };
-
-    _this.listenToKeyEvents = function (domElement) {
-      domElement.addEventListener('keydown', onKeyDown);
-      this._domElementKeyEvents = domElement;
-    };
-
-    _this.saveState = function () {
-      scope.target0.copy(scope.target);
-      scope.position0.copy(scope.object.position);
-      scope.zoom0 = scope.object.zoom;
-    };
-
-    _this.reset = function () {
-      scope.target.copy(scope.target0);
-      scope.object.position.copy(scope.position0);
-      scope.object.zoom = scope.zoom0;
-      scope.object.updateProjectionMatrix();
-      scope.dispatchEvent(_changeEvent);
-      scope.update();
-      state = STATE.NONE;
-    };
-
-    _this.update = function () {
-      var offset = new _three.Vector3();
-      var quat = new _three.Quaternion().setFromUnitVectors(object.up, new _three.Vector3(0, 1, 0));
-      var quatInverse = quat.clone().invert();
-      var lastPosition = new _three.Vector3();
-      var lastQuaternion = new _three.Quaternion();
-      var twoPI = 2 * Math.PI;
-      return function update() {
-        var position = scope.object.position;
-        offset.copy(position).sub(scope.target);
-        offset.applyQuaternion(quat);
-        spherical.setFromVector3(offset);
-
-        if (scope.autoRotate && state === STATE.NONE) {
-          rotateLeft(getAutoRotationAngle());
-        }
-
-        if (scope.enableDamping) {
-          spherical.theta += sphericalDelta.theta * scope.dampingFactor;
-          spherical.phi += sphericalDelta.phi * scope.dampingFactor;
-        } else {
-          spherical.theta += sphericalDelta.theta;
-          spherical.phi += sphericalDelta.phi;
-        }
-
-        var min = scope.minAzimuthAngle;
-        var max = scope.maxAzimuthAngle;
-
-        if (isFinite(min) && isFinite(max)) {
-          if (min < -Math.PI) min += twoPI;else if (min > Math.PI) min -= twoPI;
-          if (max < -Math.PI) max += twoPI;else if (max > Math.PI) max -= twoPI;
-
-          if (min <= max) {
-            spherical.theta = Math.max(min, Math.min(max, spherical.theta));
-          } else {
-            spherical.theta = spherical.theta > (min + max) / 2 ? Math.max(min, spherical.theta) : Math.min(max, spherical.theta);
-          }
-        }
-
-        spherical.phi = Math.max(scope.minPolarAngle, Math.min(scope.maxPolarAngle, spherical.phi));
-        spherical.makeSafe();
-        spherical.radius *= scale;
-        spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, spherical.radius));
-
-        if (scope.enableDamping === true) {
-          scope.target.addScaledVector(panOffset, scope.dampingFactor);
-        } else {
-          scope.target.add(panOffset);
-        }
-
-        offset.setFromSpherical(spherical);
-        offset.applyQuaternion(quatInverse);
-        position.copy(scope.target).add(offset);
-        scope.object.lookAt(scope.target);
-
-        if (scope.enableDamping === true) {
-          sphericalDelta.theta *= 1 - scope.dampingFactor;
-          sphericalDelta.phi *= 1 - scope.dampingFactor;
-          panOffset.multiplyScalar(1 - scope.dampingFactor);
-        } else {
-          sphericalDelta.set(0, 0, 0);
-          panOffset.set(0, 0, 0);
-        }
-
-        scale = 1;
-
-        if (zoomChanged || lastPosition.distanceToSquared(scope.object.position) > EPS || 8 * (1 - lastQuaternion.dot(scope.object.quaternion)) > EPS) {
-          scope.dispatchEvent(_changeEvent);
-          lastPosition.copy(scope.object.position);
-          lastQuaternion.copy(scope.object.quaternion);
-          zoomChanged = false;
-          return true;
-        }
-
-        return false;
-      };
-    }();
-
-    _this.dispose = function () {
-      scope.domElement.removeEventListener('contextmenu', onContextMenu);
-      scope.domElement.removeEventListener('pointerdown', onPointerDown);
-      scope.domElement.removeEventListener('pointercancel', onPointerCancel);
-      scope.domElement.removeEventListener('wheel', onMouseWheel);
-      scope.domElement.removeEventListener('pointermove', onPointerMove);
-      scope.domElement.removeEventListener('pointerup', onPointerUp);
-
-      if (scope._domElementKeyEvents !== null) {
-        scope._domElementKeyEvents.removeEventListener('keydown', onKeyDown);
-      }
-    };
-
-    var scope = _assertThisInitialized(_this);
-
-    var STATE = {
-      NONE: -1,
-      ROTATE: 0,
-      DOLLY: 1,
-      PAN: 2,
-      TOUCH_ROTATE: 3,
-      TOUCH_PAN: 4,
-      TOUCH_DOLLY_PAN: 5,
-      TOUCH_DOLLY_ROTATE: 6
-    };
-    var state = STATE.NONE;
-    var EPS = 0.000001;
-    var spherical = new _three.Spherical();
-    var sphericalDelta = new _three.Spherical();
-    var scale = 1;
-    var panOffset = new _three.Vector3();
-    var zoomChanged = false;
-    var rotateStart = new _three.Vector2();
-    var rotateEnd = new _three.Vector2();
-    var rotateDelta = new _three.Vector2();
-    var panStart = new _three.Vector2();
-    var panEnd = new _three.Vector2();
-    var panDelta = new _three.Vector2();
-    var dollyStart = new _three.Vector2();
-    var dollyEnd = new _three.Vector2();
-    var dollyDelta = new _three.Vector2();
-    var pointers = [];
-    var pointerPositions = {};
-
-    function getAutoRotationAngle() {
-      return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-    }
-
-    function getZoomScale() {
-      return Math.pow(0.95, scope.zoomSpeed);
-    }
-
-    function rotateLeft(angle) {
-      sphericalDelta.theta -= angle;
-    }
-
-    function rotateUp(angle) {
-      sphericalDelta.phi -= angle;
-    }
-
-    var panLeft = function () {
-      var v = new _three.Vector3();
-      return function panLeft(distance, objectMatrix) {
-        v.setFromMatrixColumn(objectMatrix, 0);
-        v.multiplyScalar(-distance);
-        panOffset.add(v);
-      };
-    }();
-
-    var panUp = function () {
-      var v = new _three.Vector3();
-      return function panUp(distance, objectMatrix) {
-        if (scope.screenSpacePanning === true) {
-          v.setFromMatrixColumn(objectMatrix, 1);
-        } else {
-          v.setFromMatrixColumn(objectMatrix, 0);
-          v.crossVectors(scope.object.up, v);
-        }
-
-        v.multiplyScalar(distance);
-        panOffset.add(v);
-      };
-    }();
-
-    var pan = function () {
-      var offset = new _three.Vector3();
-      return function pan(deltaX, deltaY) {
-        var element = scope.domElement;
-
-        if (scope.object.isPerspectiveCamera) {
-          var position = scope.object.position;
-          offset.copy(position).sub(scope.target);
-          var targetDistance = offset.length();
-          targetDistance *= Math.tan(scope.object.fov / 2 * Math.PI / 180.0);
-          panLeft(2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix);
-          panUp(2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix);
-        } else if (scope.object.isOrthographicCamera) {
-          panLeft(deltaX * (scope.object.right - scope.object.left) / scope.object.zoom / element.clientWidth, scope.object.matrix);
-          panUp(deltaY * (scope.object.top - scope.object.bottom) / scope.object.zoom / element.clientHeight, scope.object.matrix);
-        } else {
-          console.warn('WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.');
-          scope.enablePan = false;
-        }
-      };
-    }();
-
-    function dollyOut(dollyScale) {
-      if (scope.object.isPerspectiveCamera) {
-        scale /= dollyScale;
-      } else if (scope.object.isOrthographicCamera) {
-        scope.object.zoom = Math.max(scope.minZoom, Math.min(scope.maxZoom, scope.object.zoom * dollyScale));
-        scope.object.updateProjectionMatrix();
-        zoomChanged = true;
-      } else {
-        console.warn('WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.');
-        scope.enableZoom = false;
-      }
-    }
-
-    function dollyIn(dollyScale) {
-      if (scope.object.isPerspectiveCamera) {
-        scale *= dollyScale;
-      } else if (scope.object.isOrthographicCamera) {
-        scope.object.zoom = Math.max(scope.minZoom, Math.min(scope.maxZoom, scope.object.zoom / dollyScale));
-        scope.object.updateProjectionMatrix();
-        zoomChanged = true;
-      } else {
-        console.warn('WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.');
-        scope.enableZoom = false;
-      }
-    }
-
-    function handleMouseDownRotate(event) {
-      rotateStart.set(event.clientX, event.clientY);
-    }
-
-    function handleMouseDownDolly(event) {
-      dollyStart.set(event.clientX, event.clientY);
-    }
-
-    function handleMouseDownPan(event) {
-      panStart.set(event.clientX, event.clientY);
-    }
-
-    function handleMouseMoveRotate(event) {
-      rotateEnd.set(event.clientX, event.clientY);
-      rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(scope.rotateSpeed);
-      var element = scope.domElement;
-      rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight);
-      rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
-      rotateStart.copy(rotateEnd);
-      scope.update();
-    }
-
-    function handleMouseMoveDolly(event) {
-      dollyEnd.set(event.clientX, event.clientY);
-      dollyDelta.subVectors(dollyEnd, dollyStart);
-
-      if (dollyDelta.y > 0) {
-        dollyOut(getZoomScale());
-      } else if (dollyDelta.y < 0) {
-        dollyIn(getZoomScale());
-      }
-
-      dollyStart.copy(dollyEnd);
-      scope.update();
-    }
-
-    function handleMouseMovePan(event) {
-      panEnd.set(event.clientX, event.clientY);
-      panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
-      pan(panDelta.x, panDelta.y);
-      panStart.copy(panEnd);
-      scope.update();
-    }
-
-    function handleMouseWheel(event) {
-      if (event.deltaY < 0) {
-        dollyIn(getZoomScale());
-      } else if (event.deltaY > 0) {
-        dollyOut(getZoomScale());
-      }
-
-      scope.update();
-    }
-
-    function handleKeyDown(event) {
-      var needsUpdate = false;
-
-      switch (event.code) {
-        case scope.keys.UP:
-          pan(0, scope.keyPanSpeed);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.BOTTOM:
-          pan(0, -scope.keyPanSpeed);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.LEFT:
-          pan(scope.keyPanSpeed, 0);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.RIGHT:
-          pan(-scope.keyPanSpeed, 0);
-          needsUpdate = true;
-          break;
-      }
-
-      if (needsUpdate) {
-        event.preventDefault();
-        scope.update();
-      }
-    }
-
-    function handleTouchStartRotate() {
-      if (pointers.length === 1) {
-        rotateStart.set(pointers[0].pageX, pointers[0].pageY);
-      } else {
-        var x = 0.5 * (pointers[0].pageX + pointers[1].pageX);
-        var y = 0.5 * (pointers[0].pageY + pointers[1].pageY);
-        rotateStart.set(x, y);
-      }
-    }
-
-    function handleTouchStartPan() {
-      if (pointers.length === 1) {
-        panStart.set(pointers[0].pageX, pointers[0].pageY);
-      } else {
-        var x = 0.5 * (pointers[0].pageX + pointers[1].pageX);
-        var y = 0.5 * (pointers[0].pageY + pointers[1].pageY);
-        panStart.set(x, y);
-      }
-    }
-
-    function handleTouchStartDolly() {
-      var dx = pointers[0].pageX - pointers[1].pageX;
-      var dy = pointers[0].pageY - pointers[1].pageY;
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      dollyStart.set(0, distance);
-    }
-
-    function handleTouchStartDollyPan() {
-      if (scope.enableZoom) handleTouchStartDolly();
-      if (scope.enablePan) handleTouchStartPan();
-    }
-
-    function handleTouchStartDollyRotate() {
-      if (scope.enableZoom) handleTouchStartDolly();
-      if (scope.enableRotate) handleTouchStartRotate();
-    }
-
-    function handleTouchMoveRotate(event) {
-      if (pointers.length == 1) {
-        rotateEnd.set(event.pageX, event.pageY);
-      } else {
-        var position = getSecondPointerPosition(event);
-        var x = 0.5 * (event.pageX + position.x);
-        var y = 0.5 * (event.pageY + position.y);
-        rotateEnd.set(x, y);
-      }
-
-      rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(scope.rotateSpeed);
-      var element = scope.domElement;
-      rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight);
-      rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
-      rotateStart.copy(rotateEnd);
-    }
-
-    function handleTouchMovePan(event) {
-      if (pointers.length === 1) {
-        panEnd.set(event.pageX, event.pageY);
-      } else {
-        var position = getSecondPointerPosition(event);
-        var x = 0.5 * (event.pageX + position.x);
-        var y = 0.5 * (event.pageY + position.y);
-        panEnd.set(x, y);
-      }
-
-      panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
-      pan(panDelta.x, panDelta.y);
-      panStart.copy(panEnd);
-    }
-
-    function handleTouchMoveDolly(event) {
-      var position = getSecondPointerPosition(event);
-      var dx = event.pageX - position.x;
-      var dy = event.pageY - position.y;
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      dollyEnd.set(0, distance);
-      dollyDelta.set(0, Math.pow(dollyEnd.y / dollyStart.y, scope.zoomSpeed));
-      dollyOut(dollyDelta.y);
-      dollyStart.copy(dollyEnd);
-    }
-
-    function handleTouchMoveDollyPan(event) {
-      if (scope.enableZoom) handleTouchMoveDolly(event);
-      if (scope.enablePan) handleTouchMovePan(event);
-    }
-
-    function handleTouchMoveDollyRotate(event) {
-      if (scope.enableZoom) handleTouchMoveDolly(event);
-      if (scope.enableRotate) handleTouchMoveRotate(event);
-    }
-
-    function onPointerDown(event) {
-      if (scope.enabled === false) return;
-
-      if (pointers.length === 0) {
-        scope.domElement.setPointerCapture(event.pointerId);
-        scope.domElement.addEventListener('pointermove', onPointerMove);
-        scope.domElement.addEventListener('pointerup', onPointerUp);
-      }
-
-      addPointer(event);
-
-      if (event.pointerType === 'touch') {
-        onTouchStart(event);
-      } else {
-        onMouseDown(event);
-      }
-    }
-
-    function onPointerMove(event) {
-      if (scope.enabled === false) return;
-
-      if (event.pointerType === 'touch') {
-        onTouchMove(event);
-      } else {
-        onMouseMove(event);
-      }
-    }
-
-    function onPointerUp(event) {
-      removePointer(event);
-
-      if (pointers.length === 0) {
-        scope.domElement.releasePointerCapture(event.pointerId);
-        scope.domElement.removeEventListener('pointermove', onPointerMove);
-        scope.domElement.removeEventListener('pointerup', onPointerUp);
-      }
-
-      scope.dispatchEvent(_endEvent);
-      state = STATE.NONE;
-    }
-
-    function onPointerCancel(event) {
-      removePointer(event);
-    }
-
-    function onMouseDown(event) {
-      var mouseAction;
-
-      switch (event.button) {
-        case 0:
-          mouseAction = scope.mouseButtons.LEFT;
-          break;
-
-        case 1:
-          mouseAction = scope.mouseButtons.MIDDLE;
-          break;
-
-        case 2:
-          mouseAction = scope.mouseButtons.RIGHT;
-          break;
-
-        default:
-          mouseAction = -1;
-      }
-
-      switch (mouseAction) {
-        case _three.MOUSE.DOLLY:
-          if (scope.enableZoom === false) return;
-          handleMouseDownDolly(event);
-          state = STATE.DOLLY;
-          break;
-
-        case _three.MOUSE.ROTATE:
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            if (scope.enablePan === false) return;
-            handleMouseDownPan(event);
-            state = STATE.PAN;
-          } else {
-            if (scope.enableRotate === false) return;
-            handleMouseDownRotate(event);
-            state = STATE.ROTATE;
-          }
-
-          break;
-
-        case _three.MOUSE.PAN:
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            if (scope.enableRotate === false) return;
-            handleMouseDownRotate(event);
-            state = STATE.ROTATE;
-          } else {
-            if (scope.enablePan === false) return;
-            handleMouseDownPan(event);
-            state = STATE.PAN;
-          }
-
-          break;
-
-        default:
-          state = STATE.NONE;
-      }
-
-      if (state !== STATE.NONE) {
-        scope.dispatchEvent(_startEvent);
-      }
-    }
-
-    function onMouseMove(event) {
-      if (scope.enabled === false) return;
-
-      switch (state) {
-        case STATE.ROTATE:
-          if (scope.enableRotate === false) return;
-          handleMouseMoveRotate(event);
-          break;
-
-        case STATE.DOLLY:
-          if (scope.enableZoom === false) return;
-          handleMouseMoveDolly(event);
-          break;
-
-        case STATE.PAN:
-          if (scope.enablePan === false) return;
-          handleMouseMovePan(event);
-          break;
-      }
-    }
-
-    function onMouseWheel(event) {
-      if (scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE) return;
-      event.preventDefault();
-      scope.dispatchEvent(_startEvent);
-      handleMouseWheel(event);
-      scope.dispatchEvent(_endEvent);
-    }
-
-    function onKeyDown(event) {
-      if (scope.enabled === false || scope.enablePan === false) return;
-      handleKeyDown(event);
-    }
-
-    function onTouchStart(event) {
-      trackPointer(event);
-
-      switch (pointers.length) {
-        case 1:
-          switch (scope.touches.ONE) {
-            case _three.TOUCH.ROTATE:
-              if (scope.enableRotate === false) return;
-              handleTouchStartRotate();
-              state = STATE.TOUCH_ROTATE;
-              break;
-
-            case _three.TOUCH.PAN:
-              if (scope.enablePan === false) return;
-              handleTouchStartPan();
-              state = STATE.TOUCH_PAN;
-              break;
-
-            default:
-              state = STATE.NONE;
-          }
-
-          break;
-
-        case 2:
-          switch (scope.touches.TWO) {
-            case _three.TOUCH.DOLLY_PAN:
-              if (scope.enableZoom === false && scope.enablePan === false) return;
-              handleTouchStartDollyPan();
-              state = STATE.TOUCH_DOLLY_PAN;
-              break;
-
-            case _three.TOUCH.DOLLY_ROTATE:
-              if (scope.enableZoom === false && scope.enableRotate === false) return;
-              handleTouchStartDollyRotate();
-              state = STATE.TOUCH_DOLLY_ROTATE;
-              break;
-
-            default:
-              state = STATE.NONE;
-          }
-
-          break;
-
-        default:
-          state = STATE.NONE;
-      }
-
-      if (state !== STATE.NONE) {
-        scope.dispatchEvent(_startEvent);
-      }
-    }
-
-    function onTouchMove(event) {
-      trackPointer(event);
-
-      switch (state) {
-        case STATE.TOUCH_ROTATE:
-          if (scope.enableRotate === false) return;
-          handleTouchMoveRotate(event);
-          scope.update();
-          break;
-
-        case STATE.TOUCH_PAN:
-          if (scope.enablePan === false) return;
-          handleTouchMovePan(event);
-          scope.update();
-          break;
-
-        case STATE.TOUCH_DOLLY_PAN:
-          if (scope.enableZoom === false && scope.enablePan === false) return;
-          handleTouchMoveDollyPan(event);
-          scope.update();
-          break;
-
-        case STATE.TOUCH_DOLLY_ROTATE:
-          if (scope.enableZoom === false && scope.enableRotate === false) return;
-          handleTouchMoveDollyRotate(event);
-          scope.update();
-          break;
-
-        default:
-          state = STATE.NONE;
-      }
-    }
-
-    function onContextMenu(event) {
-      if (scope.enabled === false) return;
-      event.preventDefault();
-    }
-
-    function addPointer(event) {
-      pointers.push(event);
-    }
-
-    function removePointer(event) {
-      delete pointerPositions[event.pointerId];
-
-      for (var i = 0; i < pointers.length; i++) {
-        if (pointers[i].pointerId == event.pointerId) {
-          pointers.splice(i, 1);
-          return;
-        }
-      }
-    }
-
-    function trackPointer(event) {
-      var position = pointerPositions[event.pointerId];
-
-      if (position === undefined) {
-        position = new _three.Vector2();
-        pointerPositions[event.pointerId] = position;
-      }
-
-      position.set(event.pageX, event.pageY);
-    }
-
-    function getSecondPointerPosition(event) {
-      var pointer = event.pointerId === pointers[0].pointerId ? pointers[1] : pointers[0];
-      return pointerPositions[pointer.pointerId];
-    }
-
-    scope.domElement.addEventListener('contextmenu', onContextMenu);
-    scope.domElement.addEventListener('pointerdown', onPointerDown);
-    scope.domElement.addEventListener('pointercancel', onPointerCancel);
-    scope.domElement.addEventListener('wheel', onMouseWheel, {
-      passive: false
-    });
-
-    _this.update();
-
-    return _this;
-  }
-
-  return _createClass(OrbitControls);
-}(_three.EventDispatcher);
-
-exports.OrbitControls = OrbitControls;
-
-var MapControls = function (_OrbitControls) {
-  _inherits(MapControls, _OrbitControls);
-
-  var _super2 = _createSuper(MapControls);
-
-  function MapControls(object, domElement) {
-    var _this2;
-
-    _classCallCheck(this, MapControls);
-
-    _this2 = _super2.call(this, object, domElement);
-    _this2.screenSpacePanning = false;
-    _this2.mouseButtons.LEFT = _three.MOUSE.PAN;
-    _this2.mouseButtons.RIGHT = _three.MOUSE.ROTATE;
-    _this2.touches.ONE = _three.TOUCH.PAN;
-    _this2.touches.TWO = _three.TOUCH.DOLLY_ROTATE;
-    return _this2;
-  }
-
-  return _createClass(MapControls);
-}(OrbitControls);
-
-exports.MapControls = MapControls;
-
-},{"three":3}],5:[function(require,module,exports){
-"use strict";
-
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = void 0;
-
-var THREE = _interopRequireWildcard(require("three"));
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var CharacterControls = function () {
-  function CharacterControls(camera, orbitControls) {
-    _classCallCheck(this, CharacterControls);
-
-    _defineProperty(this, "walkDirection", new THREE.Vector3());
-
-    _defineProperty(this, "rotateAxis", new THREE.Vector3(0, 1, 0));
-
-    _defineProperty(this, "rotateQuaternion", new THREE.Quaternion());
-
-    _defineProperty(this, "cameraTarget", new THREE.Vector3());
-
-    _defineProperty(this, "walkVelocity", 2);
-
-    this.camera = camera;
-    this.orbitControls = orbitControls;
-  }
-
-  _createClass(CharacterControls, [{
-    key: "getDirectionOffset",
-    value: function getDirectionOffset(controlKeys) {
-      var directionOffset = 0;
-
-      if (controlKeys.w) {
-        if (controlKeys.a) {
-          directionOffset = Math.PI / 4;
-        } else if (controlKeys.d) {
-          directionOffset = -(Math.PI / 4);
-        }
-      } else if (controlKeys.s) {
-        if (controlKeys.a) {
-          directionOffset = 3 * (Math.PI / 4);
-        } else if (controlKeys.d) {
-          directionOffset = -3 * (Math.PI / 4);
-        } else {
-          directionOffset = Math.PI;
-        }
-      } else if (controlKeys.a) {
-        directionOffset = Math.PI / 2;
-      } else if (controlKeys.d) {
-        directionOffset = -(Math.PI / 2);
-      }
-
-      return directionOffset;
-    }
-  }, {
-    key: "update",
-    value: function update(deltaTime, controlKeys, mesh) {
-      if (controlKeys.a || controlKeys.d || controlKeys.w || controlKeys.s) {
-        var angleYCameraDirection = Math.atan2(this.camera.position.x - mesh.position.x, this.camera.position.z - mesh.position.z);
-        var directionalOffset = this.getDirectionOffset(controlKeys);
-        this.rotateQuaternion.setFromAxisAngle(this.rotateAxis, angleYCameraDirection + directionalOffset);
-        mesh.quaternion.rotateTowards(this.rotateQuaternion, 0.1);
-        this.camera.getWorldPosition(this.walkDirection);
-        this.walkDirection.y = 0;
-        this.walkDirection.normalize();
-        this.walkDirection.applyAxisAngle(this.rotateAxis, directionalOffset);
-        var moveX = this.walkDirection.x * this.walkVelocity * deltaTime;
-        var moveZ = this.walkDirection.z * this.walkVelocity * deltaTime;
-        mesh.position.x += moveX;
-        mesh.position.z += moveZ;
-        this.updateCameraPosition(mesh, moveX, moveZ);
-      }
-    }
-  }, {
-    key: "updateCameraPosition",
-    value: function updateCameraPosition(mesh, moveX, moveZ) {
-      this.camera.position.x += moveX;
-      this.camera.position.z += moveZ;
-      this.cameraTarget.x = mesh.position.x;
-      this.cameraTarget.y = mesh.position.y + 1;
-      this.cameraTarget.z = mesh.position.z;
-      this.orbitControls.target = this.cameraTarget;
-    }
-  }]);
-
-  return CharacterControls;
-}();
-
-var _default = CharacterControls;
-exports["default"] = _default;
-
-},{"three":3}],6:[function(require,module,exports){
-"use strict";
-
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 var THREE = _interopRequireWildcard(require("three"));
 
 var _scene = _interopRequireDefault(require("./scene.js"));
@@ -45009,11 +44081,7 @@ var gui = new dat.GUI({
 var clock = new THREE.Clock();
 
 function animate() {
-  if (currentUser != undefined) {
-    playerScene.characterControls.update(clock.getDelta(), playerScene.controlKeys, userData[currentUser].mesh);
-  }
-
-  playerScene.orbitControls.update();
+  playerScene.thirdPersonCamera.update(clock.getElapsedTime());
   playerScene.renderer.render(playerScene.scene, playerScene.camera);
   window.requestAnimationFrame(function () {
     animate();
@@ -45059,7 +44127,7 @@ socket.on('userLeaving', function handleUserLeaving(userId) {
   delete userData[userId];
 });
 
-},{"./scene.js":7,"dat.gui":1,"gsap":2,"three":3}],7:[function(require,module,exports){
+},{"./scene.js":5,"dat.gui":1,"gsap":2,"three":3}],5:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -45071,9 +44139,7 @@ exports["default"] = void 0;
 
 var THREE = _interopRequireWildcard(require("three"));
 
-var _OrbitControls = require("./OrbitControls.js");
-
-var _characterControls = _interopRequireDefault(require("./characterControls.js"));
+var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -45106,13 +44172,9 @@ var Scene = function () {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
     this.camera.position.set(0, 2, 3);
-    this.scene.add(this.camera);
-    this.orbitControls = new _OrbitControls.OrbitControls(this.camera, this.canvas);
-    this.orbitControls.enableDamping = true;
-    this.orbitControls.minDistance = 5;
-    this.orbitControls.maxDistance = 15;
-    this.orbitControls.enablePan = false;
-    this.orbitControls.maxPolarAngle = Math.PI / 2 - 0.05;
+    this.thirdPersonCamera = new _thirdPersonCamera["default"]({
+      camera: this.camera
+    });
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true
@@ -45123,13 +44185,6 @@ var Scene = function () {
     this.renderer.setClearColor(new THREE.Color('#000000'));
     var gridHelper = new THREE.GridHelper(50, 50);
     this.scene.add(gridHelper);
-    this.controlKeys = {
-      w: false,
-      a: false,
-      s: false,
-      d: false
-    };
-    this.characterControls = new _characterControls["default"](this.camera, this.orbitControls);
     window.addEventListener('resize', function (e) {
       _this.handleResize(e);
     });
@@ -45151,27 +44206,6 @@ var Scene = function () {
       this.renderer.setSize(this.sizes.width, this.sizes.height);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     }
-  }, {
-    key: "handleKeyDown",
-    value: function handleKeyDown(e) {
-      var pressedKey = e.code.replace('Key', '').toLowerCase();
-
-      if (this.controlKeys[pressedKey] != undefined) {
-        this.controlKeys[pressedKey] = true;
-      }
-    }
-  }, {
-    key: "handleKeyUp",
-    value: function handleKeyUp(e) {
-      var pressedKey = e.code.replace('Key', '').toLowerCase();
-
-      if (this.controlKeys[pressedKey] != undefined) {
-        console.log(pressedKey);
-        this.controlKeys[pressedKey] = false;
-        this.controlKeys.a = false;
-        this.controlKeys.b = false;
-      }
-    }
   }]);
 
   return Scene;
@@ -45180,4 +44214,70 @@ var Scene = function () {
 var _default = Scene;
 exports["default"] = _default;
 
-},{"./OrbitControls.js":4,"./characterControls.js":5,"three":3}]},{},[6]);
+},{"./thirdPersonCamera":6,"three":3}],6:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var THREE = _interopRequireWildcard(require("three"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+var ThirdPersonCamera = function () {
+  function ThirdPersonCamera(params) {
+    _classCallCheck(this, ThirdPersonCamera);
+
+    this.params = params;
+    this.camera = params.camera;
+    this.currentPosition = new THREE.Vector3();
+    this.currentLookAt = new THREE.Vector3();
+  }
+
+  _createClass(ThirdPersonCamera, [{
+    key: "update",
+    value: function update(timeElapsed) {
+      var idealOffset = this.calculateIdealOffset();
+      var idealLookAt = this.calculateIdealLookAt();
+      this.currentPosition.copy(idealOffset);
+      this.currentLookAt.copy(idealLookAt);
+      this.camera.position(this.currentPosition);
+      this.camera.lookAt(this.currentLookAt);
+    }
+  }, {
+    key: "calculateIdealOffset",
+    value: function calculateIdealOffset() {
+      var idealOffset = new THREE.Vector3(0, 2, -3);
+      idealOffset.applyQuaternion(this.params.target.rotation);
+      idealOffset.add(this.params.target.position);
+      return idealOffset;
+    }
+  }, {
+    key: "calculateIdealLookAt",
+    value: function calculateIdealLookAt() {
+      var idealLookAt = new THREE.Vector3(0, 1, 5);
+      idealLookAt.applyQuaternion(this.params.target.rotation);
+      idealLookAt.add(this.params.target.position);
+      return idealLookAt;
+    }
+  }]);
+
+  return ThirdPersonCamera;
+}();
+
+var _default = ThirdPersonCamera;
+exports["default"] = _default;
+
+},{"three":3}]},{},[4]);

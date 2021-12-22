@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import Scene from './scene.js'
 import * as dat from 'dat.gui'
 import gsap from 'gsap'
+import ThirdPersonCamera from './thirdPersonCamera'
 
 /**
  * Setup Socket.io-client
@@ -45,6 +46,14 @@ const gui = new dat.GUI({
 const clock = new THREE.Clock()
 
 function animate() {
+    /**
+     * Update controls
+     */
+    playerScene.thirdPersonCamera.update(clock.getElapsedTime())
+
+    /**
+     * Render scene
+     */
     playerScene.renderer.render(playerScene.scene, playerScene.camera)
 
     window.requestAnimationFrame(() => {

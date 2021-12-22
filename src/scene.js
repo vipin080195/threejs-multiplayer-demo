@@ -38,15 +38,7 @@ class Scene {
          * Setup camera - FOV 70
          */
         this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
-
-        /**
-         * Setup camera for third person view
-         */
         this.camera.position.set(0, 2, 3)
-
-        /**
-         * Controls
-         */
 
 
         /**
@@ -67,12 +59,7 @@ class Scene {
         const gridHelper = new THREE.GridHelper(50, 50)
         this.scene.add(gridHelper)
 
-        /**
-         * Handling events
-         */
-        window.addEventListener('resize', (e) => { this.handleResize(e) })
-        window.addEventListener('keydown', (e) => { this.handleKeyDown(e) })
-        window.addEventListener('keyup', (e) => { this.handleKeyUp(e) })
+        
     }
 
     handleResize(e) {

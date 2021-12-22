@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import Scene from './scene.js'
 import * as dat from 'dat.gui'
 import gsap from 'gsap'
+import CharacterController from './characterController.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 
 /**
@@ -34,6 +35,13 @@ const userData = {}
 let currentUser = undefined
 
 /**
+ * Controllers
+ */
+let characterController = undefined
+let thirdPersonCamera = undefined
+
+
+/**
  * GUI
  */
 const gui = new dat.GUI({
@@ -49,7 +57,9 @@ function animate() {
     /**
      * Update controls
      */
-    playerScene.thirdPersonCamera.update(clock.getElapsedTime())
+    if (currentUser != undefined) {
+        characterController.update(clock.getDelta())
+    }
 
     /**
      * Render scene
@@ -81,6 +91,17 @@ socket.on('renderOtherUsers', function handleRenderOtherUsers (currentUserId, us
         userData[id].mesh.position.set(...users[id].position)
         userData[id].mesh.rotation.set(...users[id].rotation)
         playerScene.scene.add(userData[id].mesh)
+    })
+
+    /**
+     * Setup controller for the current user
+     */
+    characterController = new CharacterController({
+        mesh: userData[currentUserId].mesh
+    })
+    thirdPersonCamera = new ThirdPersonCamera({
+        camera: playerScene.camera,
+        mesh: userData[currentUserId].mesh
     })
 })
 

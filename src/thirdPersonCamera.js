@@ -10,7 +10,7 @@ class ThirdPersonCamera {
          * Setup back camera and make target it's parent
          */
         this.backCamera = new THREE.Object3D()
-        this.backCamera.position.set(0, 2, 3)
+        this.backCamera.position.set(0, 2, -3)
         this.backCamera.parent = this.target
 
         this.backCameraPosition = new THREE.Vector3()
@@ -18,14 +18,22 @@ class ThirdPersonCamera {
     }
 
     update(deltaTime) {
-        if (this.target != undefined) {
-            this.backCamera.getWorldPosition(this.backCameraPosition)
-            this.camera.position.lerp(this.backCameraPosition, deltaTime)
-
-            this.idealLookAt.copy(this.target.position)
-            this.idealLookAt.y += 0.5
-            this.camera.lookAt(this.idealLookAt)
+        if (this.target == undefined) {
+            return
         }
+
+        /**
+         * Move render camera to back camera
+         */
+        this.backCamera.getWorldPosition(this.backCameraPosition)
+        this.camera.position.lerp(this.backCameraPosition, deltaTime)
+
+        /**
+         * Set ideal viewing direction for the camera
+         */
+        this.idealLookAt.copy(this.target.position)
+        this.idealLookAt.y += 0.5
+        this.camera.lookAt(this.idealLookAt)
     }
 }
 

@@ -44038,6 +44038,151 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var THREE = _interopRequireWildcard(require("three"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+var CharacterController = function () {
+  function CharacterController(params) {
+    _classCallCheck(this, CharacterController);
+
+    this.init(params);
+  }
+
+  _createClass(CharacterController, [{
+    key: "init",
+    value: function init(params) {
+      this.params = params;
+      this.moveAcceleration = 0.1;
+      this.rotationAccelaration = 0.05;
+      this.velocity = 0.0;
+      this.input = new CharacterControllerInput();
+      this.target = params.mesh;
+    }
+  }, {
+    key: "update",
+    value: function update(deltaTime) {
+      if (this.target == undefined) {
+        return;
+      }
+
+      var rotationOffset = new THREE.Quaternion();
+      var rotationAxis = new THREE.Vector3(0, 1, 0);
+      var targetRotation = this.target.quaternion.clone();
+
+      if (this.input.controlKeys.w) {
+        this.velocity += this.moveAcceleration * deltaTime;
+      } else if (this.input.controlKeys.s) {
+        this.velocity -= this.moveAcceleration * deltaTime;
+      }
+
+      if (this.input.controlKeys.a) {
+        rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * Math.PI * deltaTime * this.rotationAccelaration);
+        targetRotation.multiply(rotationOffset);
+      } else if (this.input.controlKeys.d) {
+        rotationOffset.setFromAxisAngle(rotationAxis, 4.0 * -Math.PI * deltaTime * this.rotationAccelaration);
+        targetRotation.multiply(rotationOffset);
+      }
+
+      this.target.quaternion.copy(targetRotation);
+    }
+  }]);
+
+  return CharacterController;
+}();
+
+var CharacterControllerInput = function () {
+  function CharacterControllerInput() {
+    var _this = this;
+
+    _classCallCheck(this, CharacterControllerInput);
+
+    this.controlKeys = {
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    };
+    window.addEventListener('keydown', function (e) {
+      _this.handleKeyDown(e);
+    });
+    window.addEventListener('keyup', function (e) {
+      _this.handleKeyUp(e);
+    });
+  }
+
+  _createClass(CharacterControllerInput, [{
+    key: "handleKeyDown",
+    value: function handleKeyDown(e) {
+      var pressedKey = e.code.replace('Key', '').toLowerCase();
+
+      switch (pressedKey) {
+        case 'w':
+          this.controlKeys.w = true;
+          break;
+
+        case 'a':
+          this.controlKeys.a = true;
+          break;
+
+        case 's':
+          this.controlKeys.s = true;
+          break;
+
+        case 'd':
+          this.controlKeys.d = true;
+          break;
+      }
+    }
+  }, {
+    key: "handleKeyUp",
+    value: function handleKeyUp(e) {
+      var pressedKey = e.code.replace('Key', '').toLowerCase();
+
+      switch (pressedKey) {
+        case 'w':
+          this.controlKeys.w = false;
+          break;
+
+        case 'a':
+          this.controlKeys.a = false;
+          break;
+
+        case 's':
+          this.controlKeys.s = false;
+          break;
+
+        case 'd':
+          this.controlKeys.d = false;
+          break;
+      }
+    }
+  }]);
+
+  return CharacterControllerInput;
+}();
+
+var _default = CharacterController;
+exports["default"] = _default;
+
+},{"three":3}],5:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
 var THREE = _interopRequireWildcard(require("three"));
 
 var _scene = _interopRequireDefault(require("./scene.js"));
@@ -44045,6 +44190,10 @@ var _scene = _interopRequireDefault(require("./scene.js"));
 var dat = _interopRequireWildcard(require("dat.gui"));
 
 var _gsap = _interopRequireDefault(require("gsap"));
+
+var _characterController = _interopRequireDefault(require("./characterController.js"));
+
+var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -44075,13 +44224,18 @@ function getMesh() {
 var playerScene = new _scene["default"]();
 var userData = {};
 var currentUser = undefined;
+var characterController = undefined;
+var thirdPersonCamera = undefined;
 var gui = new dat.GUI({
   closed: false
 });
 var clock = new THREE.Clock();
 
 function animate() {
-  playerScene.thirdPersonCamera.update(clock.getElapsedTime());
+  if (currentUser != undefined) {
+    characterController.update(clock.getDelta());
+  }
+
   playerScene.renderer.render(playerScene.scene, playerScene.camera);
   window.requestAnimationFrame(function () {
     animate();
@@ -44106,6 +44260,13 @@ socket.on('renderOtherUsers', function handleRenderOtherUsers(currentUserId, use
 
     playerScene.scene.add(userData[id].mesh);
   });
+  characterController = new _characterController["default"]({
+    mesh: userData[currentUserId].mesh
+  });
+  thirdPersonCamera = new _thirdPersonCamera["default"]({
+    camera: playerScene.camera,
+    mesh: userData[currentUserId].mesh
+  });
 });
 socket.on('renderNewUser', function handleRenderNewUser(newUserId, users) {
   var _userData$newUserId$m, _userData$newUserId$m2;
@@ -44127,7 +44288,7 @@ socket.on('userLeaving', function handleUserLeaving(userId) {
   delete userData[userId];
 });
 
-},{"./scene.js":5,"dat.gui":1,"gsap":2,"three":3}],5:[function(require,module,exports){
+},{"./characterController.js":4,"./scene.js":6,"./thirdPersonCamera":7,"dat.gui":1,"gsap":2,"three":3}],6:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -44138,10 +44299,6 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 
 var THREE = _interopRequireWildcard(require("three"));
-
-var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -44155,8 +44312,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 var Scene = function () {
   function Scene() {
-    var _this = this;
-
     var canvas = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document.querySelector('#webgl_handle');
     var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window.innerWidth;
     var height = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window.innerHeight;
@@ -44172,9 +44327,6 @@ var Scene = function () {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
     this.camera.position.set(0, 2, 3);
-    this.thirdPersonCamera = new _thirdPersonCamera["default"]({
-      camera: this.camera
-    });
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true
@@ -44185,15 +44337,6 @@ var Scene = function () {
     this.renderer.setClearColor(new THREE.Color('#000000'));
     var gridHelper = new THREE.GridHelper(50, 50);
     this.scene.add(gridHelper);
-    window.addEventListener('resize', function (e) {
-      _this.handleResize(e);
-    });
-    window.addEventListener('keydown', function (e) {
-      _this.handleKeyDown(e);
-    });
-    window.addEventListener('keyup', function (e) {
-      _this.handleKeyUp(e);
-    });
   }
 
   _createClass(Scene, [{
@@ -44214,7 +44357,7 @@ var Scene = function () {
 var _default = Scene;
 exports["default"] = _default;
 
-},{"./thirdPersonCamera":6,"three":3}],6:[function(require,module,exports){
+},{"three":3}],7:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -44242,35 +44385,26 @@ var ThirdPersonCamera = function () {
 
     this.params = params;
     this.camera = params.camera;
-    this.currentPosition = new THREE.Vector3();
-    this.currentLookAt = new THREE.Vector3();
+    this.target = params.mesh;
+    this.backCamera = new THREE.Object3D();
+    this.backCamera.position.set(0, 2, -3);
+    this.backCamera.parent = this.target;
+    this.backCameraPosition = new THREE.Vector3();
+    this.idealLookAt = new THREE.Vector3();
   }
 
   _createClass(ThirdPersonCamera, [{
     key: "update",
-    value: function update(timeElapsed) {
-      var idealOffset = this.calculateIdealOffset();
-      var idealLookAt = this.calculateIdealLookAt();
-      this.currentPosition.copy(idealOffset);
-      this.currentLookAt.copy(idealLookAt);
-      this.camera.position(this.currentPosition);
-      this.camera.lookAt(this.currentLookAt);
-    }
-  }, {
-    key: "calculateIdealOffset",
-    value: function calculateIdealOffset() {
-      var idealOffset = new THREE.Vector3(0, 2, -3);
-      idealOffset.applyQuaternion(this.params.target.rotation);
-      idealOffset.add(this.params.target.position);
-      return idealOffset;
-    }
-  }, {
-    key: "calculateIdealLookAt",
-    value: function calculateIdealLookAt() {
-      var idealLookAt = new THREE.Vector3(0, 1, 5);
-      idealLookAt.applyQuaternion(this.params.target.rotation);
-      idealLookAt.add(this.params.target.position);
-      return idealLookAt;
+    value: function update(deltaTime) {
+      if (this.target == undefined) {
+        return;
+      }
+
+      this.backCamera.getWorldPosition(this.backCameraPosition);
+      this.camera.position.lerp(this.backCameraPosition, deltaTime);
+      this.idealLookAt.copy(this.target.position);
+      this.idealLookAt.y += 0.5;
+      this.camera.lookAt(this.idealLookAt);
     }
   }]);
 
@@ -44280,4 +44414,4 @@ var ThirdPersonCamera = function () {
 var _default = ThirdPersonCamera;
 exports["default"] = _default;
 
-},{"three":3}]},{},[4]);
+},{"three":3}]},{},[5]);

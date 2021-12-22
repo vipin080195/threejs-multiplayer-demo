@@ -1,8 +1,7 @@
 import * as THREE from 'three'
 import Scene from './scene.js'
 import * as dat from 'dat.gui'
-import gsap from 'gsap'
-import CharacterController from './characterController.js'
+import Character from './character.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 
 /**
@@ -27,13 +26,17 @@ const playerScene = new Scene()
  */
 const remoteData = {}
 const renderedUsers = {}
+
+/**
+ * Quick access to current character
+ */
 let currentUserId = undefined
 let currentUser = undefined
 
 /**
  * Controllers
  */
-let characterController = undefined
+let character = undefined
 let thirdPersonCamera = undefined
 
 /**
@@ -43,10 +46,10 @@ const clock = new THREE.Clock()
 
 function animate() {
     /**
-     * Update controls
+     * Update controls & notify about changes
      */
     if (currentUserId != undefined) {
-        characterController.update(clock.getDelta())
+        character.update(clock.getDelta())
         thirdPersonCamera.update()
 
         socket.emit('update', {
@@ -86,19 +89,23 @@ animate()
  * Gather user socket ID
  */
 socket.on('setId', function handleSetId(params) {
+    /**
+     * Capture socket ID
+     */
     currentUserId = params.id
 
     /**
      * Initialize Character and Camera
      */
-    characterController = new CharacterController({
-        id: currentUserId
+    character = new Character({
+        id: currentUserId,
+        isControllable: true
     })
 
     /**
      * Load model and animations and add it to the scene
      */
-    currentUser = characterController.user
+    currentUser = character.user
     playerScene.scene.add(currentUser.mesh)
 
     /**
@@ -127,7 +134,7 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
              * Render if new user
              */
             if (renderedUsers[user.id] == undefined) {
-                renderedUsers[user.id] = new CharacterController({id: user.id}).target
+                renderedUsers[user.id] = new character({id: user.id}).target
                 playerScene.scene.add(renderedUsers[user.id])
             }
         }

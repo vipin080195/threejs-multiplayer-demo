@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-class CharacterController {
+class Character {
     constructor(params) {
         this.init(params)
     }
@@ -8,13 +8,6 @@ class CharacterController {
     init(params) {
         this.params = params
 
-        /**
-         * Initial values & constants
-         */
-        this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5)
-        this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0)
-        this.velocity = new THREE.Vector3()
-        
         /**
          * TODO: Instantiate FSM
          */
@@ -24,14 +17,27 @@ class CharacterController {
          */
         // TODO: load an actual model
         this.user = this.loadModelAndAnimations()
-        this.target = this.user.mesh
 
-        /**
-         * Instantiate controller input
-         */
-        this.input = new CharacterControllerInput({
-            mesh: this.target
-        })
+        if (this.params.isControllable) {
+            /**
+             * Initial values & constants
+             */
+            this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5)
+            this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0)
+            this.velocity = new THREE.Vector3()
+
+            /**
+             * Set Target
+             */
+            this.target = this.user.mesh
+
+            /**
+             * Instantiate controller input
+             */
+            this.input = new CharacterControllerInput({
+                mesh: this.target
+            })
+        }
     }
 
     loadModelAndAnimations() {
@@ -46,7 +52,7 @@ class CharacterController {
          */
         return {
             mesh: mesh,
-            model: 'Cube',
+            model: 'Cube'
         }
     }
 
@@ -180,4 +186,4 @@ class CharacterControllerInput {
     }
 }
 
-export default CharacterController
+export default Character

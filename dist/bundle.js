@@ -42472,6 +42472,8 @@ var _GLTFLoader = require("./GLTFLoader.js");
 
 var _DRACOLoader = require("./DRACOLoader.js");
 
+var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -42494,8 +42496,10 @@ var Character = function () {
   _createClass(Character, [{
     key: "init",
     value: function init(params) {
+      this.isLoaded = false;
       this.params = params;
       this.scene = params.scene;
+      this.camera = params.camera;
 
       if (this.params.isControllable) {
         this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
@@ -42515,7 +42519,7 @@ var Character = function () {
       dracoLoader.setDecoderPath('static/draco');
       var gltfLoader = new _GLTFLoader.GLTFLoader();
       gltfLoader.setDRACOLoader(dracoLoader);
-      var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial());
+      var mesh = new THREE.Object3D();
       this.target = mesh;
       this.userData = {
         model: 'proxy',
@@ -42523,8 +42527,9 @@ var Character = function () {
         x: mesh.position.x,
         y: mesh.position.y,
         z: mesh.position.z,
-        h: mesh.rotation.y,
-        pb: mesh.rotation.x
+        rx: mesh.rotation.x,
+        ry: mesh.rotation.y,
+        rz: mesh.rotation.rz
       };
       gltfLoader.load('static/models/avatar.glb', function (glb) {
         var mesh = glb.scene.children[0];
@@ -42532,15 +42537,25 @@ var Character = function () {
         _this.scene.add(mesh);
 
         _this.target = mesh;
+
+        if (_this.params.isControllable) {
+          _this.thirdPersonCamera = new _thirdPersonCamera["default"]({
+            camera: _this.camera,
+            mesh: mesh
+          });
+        }
+
         _this.userData = {
           model: 'girl',
           mesh: mesh,
           x: mesh.position.x,
           y: mesh.position.y,
           z: mesh.position.z,
-          h: mesh.rotation.y,
-          pb: mesh.rotation.x
+          rx: mesh.rotation.x,
+          ry: mesh.rotation.y,
+          rz: mesh.rotation.z
         };
+        _this.isLoaded = true;
       });
     }
   }, {
@@ -42597,7 +42612,7 @@ var Character = function () {
 var _default = Character;
 exports["default"] = _default;
 
-},{"./DRACOLoader.js":3,"./GLTFLoader.js":4,"./characterControllerInput.js":6,"three":2}],6:[function(require,module,exports){
+},{"./DRACOLoader.js":3,"./GLTFLoader.js":4,"./characterControllerInput.js":6,"./thirdPersonCamera":9,"three":2}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -42699,8 +42714,6 @@ var dat = _interopRequireWildcard(require("dat.gui"));
 
 var _character = _interopRequireDefault(require("./character.js"));
 
-var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -42717,21 +42730,21 @@ var renderedUsers = {};
 var currentUserId = undefined;
 var currentUser = undefined;
 var character = undefined;
-var thirdPersonCamera = undefined;
 var clock = new THREE.Clock();
 
 function animate() {
-  if (currentUserId != undefined) {
+  if (currentUserId && character.isLoaded) {
     character.update(clock.getDelta());
-    thirdPersonCamera.update();
+    character.thirdPersonCamera.update();
     socket.emit('update', {
       id: currentUserId,
       model: character.userData.model,
-      x: character.userData.mesh.position.x,
-      y: character.userData.mesh.position.y,
-      z: character.userData.mesh.position.z,
-      h: character.userData.mesh.rotation.y,
-      pb: character.userData.mesh.rotation.x
+      x: character.target.position.x,
+      y: character.target.position.y,
+      z: character.target.position.z,
+      rx: character.target.rotation.x,
+      ry: character.target.rotation.y,
+      rz: character.target.rotation.z
     });
   }
 
@@ -42750,19 +42763,17 @@ socket.on('setId', function handleSetId(params) {
   currentUserId = params.id;
   character = new _character["default"]({
     scene: playerScene.scene,
-    isControllable: true
-  });
-  thirdPersonCamera = new _thirdPersonCamera["default"]({
     camera: playerScene.camera,
-    mesh: character.userData.mesh
+    isControllable: true
   });
   socket.emit('init', {
     model: character.userData.model,
     x: character.userData.x,
     y: character.userData.y,
     z: character.userData.z,
-    h: character.userData.h,
-    pb: character.userData.pb
+    rx: character.userData.rx,
+    ry: character.userData.ry,
+    rz: character.userData.rz
   });
 });
 socket.on('payloadDrop', function handlePayloadDrop(params) {
@@ -42774,14 +42785,14 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
         renderedUsers[user.id] = new _character["default"]({
           scene: playerScene.scene,
           isControllable: false
-        }).userData.mesh;
+        });
       }
     }
   });
 });
 socket.on('deleteUser', function handleDeleteUser(params) {
   if (remoteData[params.id]) {
-    playerScene.scene.remove(renderedUsers[params.id]);
+    playerScene.scene.remove(renderedUsers[params.id].userData.mesh);
     delete renderedUsers[params.id];
     delete remoteData[params.id];
   }
@@ -42789,14 +42800,15 @@ socket.on('deleteUser', function handleDeleteUser(params) {
 
 function updateUsers(deltaTime) {
   Object.keys(renderedUsers).forEach(function (id) {
-    var mesh = renderedUsers[id];
-    mesh.rotation.x = remoteData[id].pb;
-    mesh.rotation.y = remoteData[id].h;
+    var mesh = renderedUsers[id].target;
+    mesh.rotation.x = remoteData[id].rx;
+    mesh.rotation.y = remoteData[id].ry;
+    mesh.rotation.z = remoteData[id].rz;
     mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime);
   });
 }
 
-},{"./character.js":5,"./scene.js":8,"./thirdPersonCamera":9,"dat.gui":1,"three":2}],8:[function(require,module,exports){
+},{"./character.js":5,"./scene.js":8,"dat.gui":1,"three":2}],8:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }

@@ -51,8 +51,9 @@ io.on('connection', function handleConnection (socket) {
             x: params.x,
             y: params.y,
             z: params.z,
-            h: params.h,
-            pb: params.pb
+            rx: params.rx,
+            ry: params.ry,
+            rz: params.rz
         }
     })
 
@@ -65,8 +66,9 @@ io.on('connection', function handleConnection (socket) {
             x: params.x,
             y: params.y,
             z: params.z,
-            h: params.h,
-            pb: params.pb
+            rx: params.rx,
+            ry: params.ry,
+            rz: params.rz
         }
     })
 

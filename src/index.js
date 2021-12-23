@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import Scene from './scene.js'
 import * as dat from 'dat.gui'
 import Character from './character.js'
-import ThirdPersonCamera from './thirdPersonCamera'
 
 /**
  * Setup Socket.io-client
@@ -37,7 +36,6 @@ let currentUser = undefined
  * Controllers
  */
 let character = undefined
-let thirdPersonCamera = undefined
 
 /**
  * Animation function
@@ -48,21 +46,21 @@ function animate() {
     /**
      * Update controls & notify about changes
      */
-    if (currentUserId != undefined) {
+    if (currentUserId && character.isLoaded) {
         character.update(clock.getDelta())
-        thirdPersonCamera.update()
+        character.thirdPersonCamera.update()
 
         socket.emit('update', {
             id: currentUserId,
             model: character.userData.model,
-            x: character.userData.mesh.position.x,
-            y: character.userData.mesh.position.y,
-            z: character.userData.mesh.position.z,
-            h: character.userData.mesh.rotation.y,
-            pb: character.userData.mesh.rotation.x
+            x: character.target.position.x,
+            y: character.target.position.y,
+            z: character.target.position.z,
+            rx: character.target.rotation.x,
+            ry: character.target.rotation.y,
+            rz: character.target.rotation.z
         })
     }
-
     /**
      * Update other users
      */
@@ -99,15 +97,8 @@ socket.on('setId', function handleSetId(params) {
      */
     character = new Character({
         scene: playerScene.scene,
-        isControllable: true
-    })
-
-    /**
-     * Instantiate 3ps camera
-     */
-    thirdPersonCamera = new ThirdPersonCamera({
         camera: playerScene.camera,
-        mesh: character.userData.mesh
+        isControllable: true
     })
 
     socket.emit('init', {
@@ -115,8 +106,9 @@ socket.on('setId', function handleSetId(params) {
         x: character.userData.x,
         y: character.userData.y,
         z: character.userData.z,
-        h: character.userData.h,
-        pb: character.userData.pb
+        rx: character.userData.rx,
+        ry: character.userData.ry,
+        rz: character.userData.rz
     })
 })
 
@@ -138,7 +130,7 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
                 renderedUsers[user.id] = new Character({
                     scene: playerScene.scene,
                     isControllable: false
-                }).userData.mesh
+                })
             }
         }
     })
@@ -149,7 +141,7 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
  */
 socket.on('deleteUser', function handleDeleteUser(params) {
     if (remoteData[params.id]) {
-        playerScene.scene.remove(renderedUsers[params.id])
+        playerScene.scene.remove(renderedUsers[params.id].userData.mesh)
         delete renderedUsers[params.id]
         delete remoteData[params.id]
     }
@@ -160,9 +152,12 @@ socket.on('deleteUser', function handleDeleteUser(params) {
  */
  function updateUsers(deltaTime) {
     Object.keys(renderedUsers).forEach((id) => {
-        const mesh = renderedUsers[id]
-        mesh.rotation.x = remoteData[id].pb
-        mesh.rotation.y = remoteData[id].h
+        const mesh = renderedUsers[id].target
+        
+        mesh.rotation.x = remoteData[id].rx
+        mesh.rotation.y = remoteData[id].ry
+        mesh.rotation.z = remoteData[id].rz
+
         mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime)
     })
 }

@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import CharacterControllerInput from './characterControllerInput.js'
 import { GLTFLoader } from './GLTFLoader.js'
 import { DRACOLoader } from './DRACOLoader.js'
+import ThirdPersonCamera from './thirdPersonCamera'
 
 class Character {
     constructor(params) {
@@ -9,8 +10,10 @@ class Character {
     }
 
     init(params) {
+        this.isLoaded = false
         this.params = params
         this.scene = params.scene
+        this.camera = params.camera
 
         if (this.params.isControllable) {
             /**
@@ -50,10 +53,7 @@ class Character {
         /**
          * Send proxy object
          */
-        const mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new THREE.MeshBasicMaterial()
-        )
+        const mesh = new THREE.Object3D()
         this.target = mesh
         this.userData = {
             model: 'proxy',
@@ -61,8 +61,9 @@ class Character {
             x: mesh.position.x,
             y: mesh.position.y,
             z: mesh.position.z,
-            h: mesh.rotation.y,
-            pb: mesh.rotation.x
+            rx: mesh.rotation.x,
+            ry: mesh.rotation.y,
+            rz: mesh.rotation.rz
         }
 
         gltfLoader.load('static/models/avatar.glb', (glb) => {
@@ -73,6 +74,12 @@ class Character {
              * Set target
              */
             this.target = mesh
+            if (this.params.isControllable) {
+                this.thirdPersonCamera = new ThirdPersonCamera({
+                    camera: this.camera,
+                    mesh: mesh
+                })
+            }
 
             /**
              * Store relevant information
@@ -83,9 +90,12 @@ class Character {
                 x: mesh.position.x,
                 y: mesh.position.y,
                 z: mesh.position.z,
-                h: mesh.rotation.y,
-                pb: mesh.rotation.x
+                rx: mesh.rotation.x,
+                ry: mesh.rotation.y,
+                rz: mesh.rotation.z
             }
+
+            this.isLoaded = true
         })
     }
 
@@ -149,19 +159,19 @@ class Character {
         /**
          * Apply rotation depending on orientation
          */
-        const forward = new THREE.Vector3(0, 0, 1)
-        forward.applyQuaternion(this.target.quaternion)
-        forward.normalize()
-
-        const sideways = new THREE.Vector3(1, 0, 0)
-        sideways.applyQuaternion(this.target.quaternion)
-        sideways.normalize()
-
-        forward.multiplyScalar(velocity.z * deltaTime)
-        sideways.multiplyScalar(velocity.x * deltaTime)
-
-        this.target.position.add(forward)
-        this.target.position.add(sideways)
+         const forward = new THREE.Vector3(0, 0, 1)
+         forward.applyQuaternion(this.target.quaternion)
+         forward.normalize()
+ 
+         const sideways = new THREE.Vector3(1, 0, 0)
+         sideways.applyQuaternion(this.target.quaternion)
+         sideways.normalize()
+ 
+         forward.multiplyScalar(velocity.z * deltaTime)
+         sideways.multiplyScalar(velocity.x * deltaTime)
+ 
+         this.target.position.add(forward)
+         this.target.position.add(sideways)
     }
 }
 

@@ -139,7 +139,6 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
                     scene: playerScene.scene,
                     isControllable: false
                 }).userData.mesh
-                playerScene.scene.add(renderedUsers[user.id])
             }
         }
     })

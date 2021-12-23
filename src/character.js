@@ -1,5 +1,7 @@
 import * as THREE from 'three'
-import CharacterControllerInput from './characterControllerInput'
+import CharacterControllerInput from './characterControllerInput.js'
+import { GLTFLoader } from './GLTFLoader.js'
+import { DRACOLoader } from './DRACOLoader.js'
 
 class Character {
     constructor(params) {
@@ -37,31 +39,54 @@ class Character {
 
     loadModelAndAnimations() {
         /**
-         * Test cube
+         * load models
          */
-        const mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1, 3, 3, 3),
-            new THREE.MeshBasicMaterial()
-        )
-        this.scene.add(mesh)
+        const dracoLoader = new DRACOLoader()
+        dracoLoader.setDecoderPath('static/draco')
+
+        const gltfLoader = new GLTFLoader()
+        gltfLoader.setDRACOLoader(dracoLoader)
 
         /**
-         * Set as target for controlled movement
+         * Send proxy object
          */
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial()
+        )
         this.target = mesh
-        
-        /**
-         * Store relevant information
-         */
         this.userData = {
-            model: 'cube',
+            model: 'proxy',
             mesh: mesh,
             x: mesh.position.x,
             y: mesh.position.y,
             z: mesh.position.z,
             h: mesh.rotation.y,
-            pb: mesh.position.pb
+            pb: mesh.rotation.x
         }
+
+        gltfLoader.load('static/models/avatar.glb', (glb) => {
+            const mesh = glb.scene.children[0]
+            this.scene.add(mesh)
+
+            /**
+             * Set target
+             */
+            this.target = mesh
+
+            /**
+             * Store relevant information
+             */
+            this.userData = {
+                model: 'girl',
+                mesh: mesh,
+                x: mesh.position.x,
+                y: mesh.position.y,
+                z: mesh.position.z,
+                h: mesh.rotation.y,
+                pb: mesh.rotation.x
+            }
+        })
     }
 
     update(deltaTime) {
@@ -98,6 +123,8 @@ class Character {
             velocity.z += this.acceleration.z * deltaTime
         } else if (this.input.controlKeys.s) {
             velocity.z -= this.acceleration.z * deltaTime
+        } else {
+            velocity.z = 0
         }
 
         /**

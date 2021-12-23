@@ -54,12 +54,12 @@ function animate() {
 
         socket.emit('update', {
             id: currentUserId,
-            model: currentUser.model,
-            x: currentUser.mesh.position.x,
-            y: currentUser.mesh.position.y,
-            z: currentUser.mesh.position.z,
-            h: currentUser.mesh.rotation.y,
-            pb: currentUser.mesh.rotation.x
+            model: character.userData.model,
+            x: character.userData.mesh.position.x,
+            y: character.userData.mesh.position.y,
+            z: character.userData.mesh.position.z,
+            h: character.userData.mesh.rotation.y,
+            pb: character.userData.mesh.rotation.x
         })
     }
 
@@ -98,31 +98,25 @@ socket.on('setId', function handleSetId(params) {
      * Initialize Character and Camera
      */
     character = new Character({
-        id: currentUserId,
+        scene: playerScene.scene,
         isControllable: true
     })
-
-    /**
-     * Load model and animations and add it to the scene
-     */
-    currentUser = character.user
-    playerScene.scene.add(currentUser.mesh)
 
     /**
      * Instantiate 3ps camera
      */
     thirdPersonCamera = new ThirdPersonCamera({
         camera: playerScene.camera,
-        mesh: currentUser.mesh
+        mesh: character.userData.mesh
     })
 
     socket.emit('init', {
-        model: currentUser.model,
-        x: currentUser.x,
-        y: currentUser.y,
-        z: currentUser.z,
-        h: currentUser.h,
-        pb: currentUser.pb
+        model: character.userData.model,
+        x: character.userData.x,
+        y: character.userData.y,
+        z: character.userData.z,
+        h: character.userData.h,
+        pb: character.userData.pb
     })
 })
 
@@ -142,9 +136,9 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
              */
             if (renderedUsers[user.id] == undefined) {
                 renderedUsers[user.id] = new Character({
-                    id: user.id,
+                    scene: playerScene.scene,
                     isControllable: false
-                }).user.mesh
+                }).userData.mesh
                 playerScene.scene.add(renderedUsers[user.id])
             }
         }

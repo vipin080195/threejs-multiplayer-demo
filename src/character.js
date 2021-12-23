@@ -8,16 +8,7 @@ class Character {
 
     init(params) {
         this.params = params
-
-        /**
-         * TODO: Instantiate FSM
-         */
-        
-        /**
-         * TODO: Load models and Animations
-         */
-        // TODO: load an actual model
-        this.user = this.loadModelAndAnimations()
+        this.scene = params.scene
 
         if (this.params.isControllable) {
             /**
@@ -28,37 +19,48 @@ class Character {
             this.velocity = new THREE.Vector3()
 
             /**
-             * Set Target
-             */
-            this.target = this.user.mesh
-
-            /**
              * Instantiate controller input
              */
-            this.input = new CharacterControllerInput({
-                mesh: this.target
-            })
+            this.input = new CharacterControllerInput()
         }
+
+        /**
+         * TODO: Instantiate FSM
+         */
+        
+        /**
+         * TODO: Load models and Animations
+         */
+        // TODO: load an actual model
+        this.loadModelAndAnimations()
     }
 
     loadModelAndAnimations() {
+        /**
+         * Test cube
+         */
         const mesh = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1, 3, 3, 3),
             new THREE.MeshBasicMaterial()
         )
-        mesh.name = this.params.id
+        this.scene.add(mesh)
 
         /**
-         * Return relevant data
+         * Set as target for controlled movement
          */
-        return {
+        this.target = mesh
+        
+        /**
+         * Store relevant information
+         */
+        this.userData = {
+            model: 'cube',
             mesh: mesh,
-            model: 'Cube',
             x: mesh.position.x,
             y: mesh.position.y,
             z: mesh.position.z,
             h: mesh.rotation.y,
-            pb: mesh.rotation.x
+            pb: mesh.position.pb
         }
     }
 

@@ -1,7 +1,6 @@
 class CharacterControllerInput {
     constructor(params) {
         this.params = params
-        this.target = params.mesh
 
         /**
          * Map to determine which keys are pressed

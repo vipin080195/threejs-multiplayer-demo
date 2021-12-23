@@ -39060,31 +39060,31 @@ var Character = function () {
     key: "init",
     value: function init(params) {
       this.params = params;
-      this.user = this.loadModelAndAnimations();
+      this.scene = params.scene;
 
       if (this.params.isControllable) {
         this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
         this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
         this.velocity = new THREE.Vector3();
-        this.target = this.user.mesh;
-        this.input = new _characterControllerInput["default"]({
-          mesh: this.target
-        });
+        this.input = new _characterControllerInput["default"]();
       }
+
+      this.loadModelAndAnimations();
     }
   }, {
     key: "loadModelAndAnimations",
     value: function loadModelAndAnimations() {
       var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1, 3, 3, 3), new THREE.MeshBasicMaterial());
-      mesh.name = this.params.id;
-      return {
+      this.scene.add(mesh);
+      this.target = mesh;
+      this.userData = {
+        model: 'cube',
         mesh: mesh,
-        model: 'Cube',
         x: mesh.position.x,
         y: mesh.position.y,
         z: mesh.position.z,
         h: mesh.rotation.y,
-        pb: mesh.rotation.x
+        pb: mesh.position.pb
       };
     }
   }, {
@@ -39160,7 +39160,6 @@ var CharacterControllerInput = function () {
     _classCallCheck(this, CharacterControllerInput);
 
     this.params = params;
-    this.target = params.mesh;
     this.controlKeys = {
       w: false,
       a: false,
@@ -39269,12 +39268,12 @@ function animate() {
     thirdPersonCamera.update();
     socket.emit('update', {
       id: currentUserId,
-      model: currentUser.model,
-      x: currentUser.mesh.position.x,
-      y: currentUser.mesh.position.y,
-      z: currentUser.mesh.position.z,
-      h: currentUser.mesh.rotation.y,
-      pb: currentUser.mesh.rotation.x
+      model: character.userData.model,
+      x: character.userData.mesh.position.x,
+      y: character.userData.mesh.position.y,
+      z: character.userData.mesh.position.z,
+      h: character.userData.mesh.rotation.y,
+      pb: character.userData.mesh.rotation.x
     });
   }
 
@@ -39292,22 +39291,20 @@ animate();
 socket.on('setId', function handleSetId(params) {
   currentUserId = params.id;
   character = new _character["default"]({
-    id: currentUserId,
+    scene: playerScene.scene,
     isControllable: true
   });
-  currentUser = character.user;
-  playerScene.scene.add(currentUser.mesh);
   thirdPersonCamera = new _thirdPersonCamera["default"]({
     camera: playerScene.camera,
-    mesh: currentUser.mesh
+    mesh: character.userData.mesh
   });
   socket.emit('init', {
-    model: currentUser.model,
-    x: currentUser.x,
-    y: currentUser.y,
-    z: currentUser.z,
-    h: currentUser.h,
-    pb: currentUser.pb
+    model: character.userData.model,
+    x: character.userData.x,
+    y: character.userData.y,
+    z: character.userData.z,
+    h: character.userData.h,
+    pb: character.userData.pb
   });
 });
 socket.on('payloadDrop', function handlePayloadDrop(params) {
@@ -39317,9 +39314,9 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
 
       if (renderedUsers[user.id] == undefined) {
         renderedUsers[user.id] = new _character["default"]({
-          id: user.id,
+          scene: playerScene.scene,
           isControllable: false
-        }).user.mesh;
+        }).userData.mesh;
         playerScene.scene.add(renderedUsers[user.id]);
       }
     }

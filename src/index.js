@@ -116,7 +116,14 @@ socket.on('setId', function handleSetId(params) {
         mesh: currentUser.mesh
     })
 
-    socket.emit('init', currentUser)
+    socket.emit('init', {
+        model: currentUser.model,
+        x: currentUser.x,
+        y: currentUser.y,
+        z: currentUser.z,
+        h: currentUser.h,
+        pb: currentUser.pb
+    })
 })
 
 /**
@@ -134,10 +141,10 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
              * Render if new user
              */
             if (renderedUsers[user.id] == undefined) {
-                renderedUsers[user.id] = new character({
+                renderedUsers[user.id] = new Character({
                     id: user.id,
                     isControllable: false
-                }).target
+                }).user.mesh
                 playerScene.scene.add(renderedUsers[user.id])
             }
         }

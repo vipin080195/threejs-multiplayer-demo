@@ -53,7 +53,12 @@ class Character {
          */
         return {
             mesh: mesh,
-            model: 'Cube'
+            model: 'Cube',
+            x: mesh.position.x,
+            y: mesh.position.y,
+            z: mesh.position.z,
+            h: mesh.rotation.y,
+            pb: mesh.rotation.x
         }
     }
 

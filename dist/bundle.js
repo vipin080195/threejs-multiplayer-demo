@@ -39079,7 +39079,12 @@ var Character = function () {
       mesh.name = this.params.id;
       return {
         mesh: mesh,
-        model: 'Cube'
+        model: 'Cube',
+        x: mesh.position.x,
+        y: mesh.position.y,
+        z: mesh.position.z,
+        h: mesh.rotation.y,
+        pb: mesh.rotation.x
       };
     }
   }, {
@@ -39296,7 +39301,14 @@ socket.on('setId', function handleSetId(params) {
     camera: playerScene.camera,
     mesh: currentUser.mesh
   });
-  socket.emit('init', currentUser);
+  socket.emit('init', {
+    model: currentUser.model,
+    x: currentUser.x,
+    y: currentUser.y,
+    z: currentUser.z,
+    h: currentUser.h,
+    pb: currentUser.pb
+  });
 });
 socket.on('payloadDrop', function handlePayloadDrop(params) {
   params.payload.forEach(function (user) {
@@ -39304,10 +39316,10 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
       remoteData[user.id] = user;
 
       if (renderedUsers[user.id] == undefined) {
-        renderedUsers[user.id] = new character({
+        renderedUsers[user.id] = new _character["default"]({
           id: user.id,
           isControllable: false
-        }).target;
+        }).user.mesh;
         playerScene.scene.add(renderedUsers[user.id]);
       }
     }

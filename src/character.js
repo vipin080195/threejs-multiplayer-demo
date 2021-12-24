@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import CharacterControllerInput from './characterControllerInput.js'
 import { GLTFLoader } from './GLTFLoader.js'
 import { DRACOLoader } from './DRACOLoader.js'
+// import { FBXLoader } from './FBXLoader.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 
 class Character {
@@ -42,15 +43,6 @@ class Character {
 
     loadModelAndAnimations() {
         /**
-         * load models
-         */
-        const dracoLoader = new DRACOLoader()
-        dracoLoader.setDecoderPath('static/draco')
-
-        const gltfLoader = new GLTFLoader()
-        gltfLoader.setDRACOLoader(dracoLoader)
-
-        /**
          * Send proxy object
          */
         const mesh = new THREE.Object3D()
@@ -66,7 +58,20 @@ class Character {
             rz: mesh.rotation.rz
         }
 
-        gltfLoader.load('static/models/avatar.glb', (glb) => {
+
+        /**
+         * load models
+         */
+        const dracoLoader = new DRACOLoader()
+        dracoLoader.setDecoderPath('static/draco')
+
+        const gltfLoader = new GLTFLoader()
+        gltfLoader.setDRACOLoader(dracoLoader)
+
+        // const fbxLoader = new FBXLoader()
+        // fbxLoader.setPath('static/models/')
+
+        gltfLoader.load('/static/models/avatar.glb', (glb) => {
             const mesh = glb.scene.children[0]
             this.scene.add(mesh)
 

@@ -42515,10 +42515,6 @@ var Character = function () {
     value: function loadModelAndAnimations() {
       var _this = this;
 
-      var dracoLoader = new _DRACOLoader.DRACOLoader();
-      dracoLoader.setDecoderPath('static/draco');
-      var gltfLoader = new _GLTFLoader.GLTFLoader();
-      gltfLoader.setDRACOLoader(dracoLoader);
       var mesh = new THREE.Object3D();
       this.target = mesh;
       this.userData = {
@@ -42531,7 +42527,11 @@ var Character = function () {
         ry: mesh.rotation.y,
         rz: mesh.rotation.rz
       };
-      gltfLoader.load('static/models/avatar.glb', function (glb) {
+      var dracoLoader = new _DRACOLoader.DRACOLoader();
+      dracoLoader.setDecoderPath('static/draco');
+      var gltfLoader = new _GLTFLoader.GLTFLoader();
+      gltfLoader.setDRACOLoader(dracoLoader);
+      gltfLoader.load('/static/models/avatar.glb', function (glb) {
         var mesh = glb.scene.children[0];
 
         _this.scene.add(mesh);
@@ -42848,6 +42848,8 @@ var Scene = function () {
     this.parameters = {};
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
+    var sunlight = new THREE.AmbientLight('#ffffff', 0.5);
+    this.scene.add(sunlight);
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true

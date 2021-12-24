@@ -39,6 +39,12 @@ class Scene {
          */
         this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
 
+        /**
+         * Lights
+         */
+        const sunlight = new THREE.AmbientLight('#ffffff', 0.5)
+        this.scene.add(sunlight)
+
 
         /**
          * Setup renderer

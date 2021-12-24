@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import CharacterControllerInput from './characterControllerInput.js'
 import { GLTFLoader } from './GLTFLoader.js'
 import { DRACOLoader } from './DRACOLoader.js'
-// import { FBXLoader } from './FBXLoader.js'
+import { FBXLoader } from './FBXLoader.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 
 class Character {
@@ -29,6 +29,8 @@ class Character {
              */
             this.input = new CharacterControllerInput()
         }
+
+        this.animations = {}
 
         /**
          * TODO: Instantiate FSM
@@ -60,16 +62,13 @@ class Character {
 
 
         /**
-         * load models
+         * load models and setup 3ps camera controls if controllable
          */
         const dracoLoader = new DRACOLoader()
         dracoLoader.setDecoderPath('static/draco')
 
         const gltfLoader = new GLTFLoader()
         gltfLoader.setDRACOLoader(dracoLoader)
-
-        // const fbxLoader = new FBXLoader()
-        // fbxLoader.setPath('static/models/')
 
         gltfLoader.load('/static/models/avatar.glb', (glb) => {
             const mesh = glb.scene.children[0]
@@ -79,6 +78,15 @@ class Character {
              * Set target
              */
             this.target = mesh
+
+            /**
+             * Set target for animations
+             */
+            this.mixer = new THREE.AnimationMixer(this.target)
+
+            /**
+             * Setup camera if controllable
+             */
             if (this.params.isControllable) {
                 this.thirdPersonCamera = new ThirdPersonCamera({
                     camera: this.camera,
@@ -100,8 +108,49 @@ class Character {
                 rz: mesh.rotation.z
             }
 
+            /**
+             * Load animations
+             */
+
+            /**
+             * Setup loading manager
+             */
+   
+
+            /**
+             * Map animation names to animations
+             */
+            const fbxLoader = new FBXLoader()
+            fbxLoader.setPath('static/animations/')
+
+            fbxLoader.load('idle.fbx', (animation) => {
+                this.onLoadAnimation('idle', animation)
+            })
+            fbxLoader.load('startWalking.fbx', (animation) => {
+                this.onLoadAnimation('idle', animation)
+            })
+            fbxLoader.load('stopWalking.fbx', (animation) => {
+                this.onLoadAnimation('idle', animation)
+            })
+            fbxLoader.load('turning.fbx', (animation) => {
+                this.onLoadAnimation('idle', animation)
+            })
+
+
             this.isLoaded = true
         })
+
+
+    }
+
+    onLoadAnimation(animationName, animation) {
+        const clip = animation.animations[0]
+        const action = this.mixer.clipAction(clip)
+
+        this.animations[animationName] = {
+            clip: clip,
+            action: action
+        }
     }
 
     update(deltaTime) {
@@ -177,6 +226,10 @@ class Character {
  
          this.target.position.add(forward)
          this.target.position.add(sideways)
+
+         if (this.mixer) {
+             this.mixer.update(deltaTime)
+         }
     }
 }
 

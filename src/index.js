@@ -49,6 +49,7 @@ function animate() {
     if (currentUserId && character.isLoaded) {
         character.update(clock.getDelta())
         character.thirdPersonCamera.update()
+        character.stateMachine.update(clock.getDelta(), character.input)
 
         socket.emit('update', {
             id: currentUserId,

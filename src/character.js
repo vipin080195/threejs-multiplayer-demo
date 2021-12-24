@@ -3,6 +3,7 @@ import CharacterControllerInput from './characterControllerInput.js'
 import { GLTFLoader } from './GLTFLoader.js'
 import { DRACOLoader } from './DRACOLoader.js'
 import ThirdPersonCamera from './thirdPersonCamera'
+import FiniteStateMachine from './finiteStateMachine.js'
 
 class Character {
     constructor(params) {
@@ -14,6 +15,8 @@ class Character {
         this.params = params
         this.scene = params.scene
         this.camera = params.camera
+
+        this.animations = {}
 
         if (this.params.isControllable) {
             /**
@@ -27,13 +30,14 @@ class Character {
              * Instantiate controller input
              */
             this.input = new CharacterControllerInput()
+
+            /**
+             * TODO: Instantiate FSM
+             */
+            this.stateMachine = new FiniteStateMachine({
+                animations: this.animations
+            })
         }
-
-        this.animations = {}
-
-        /**
-         * TODO: Instantiate FSM
-         */
         
         /**
          * TODO: Load models and Animations
@@ -69,8 +73,9 @@ class Character {
         const gltfLoader = new GLTFLoader()
         gltfLoader.setDRACOLoader(dracoLoader)
 
-        gltfLoader.load('/static/models/avatar.glb', (glb) => {
+        gltfLoader.load('/static/models/soldier-axes.glb', (glb) => {
             const mesh = glb.scene.children[0]
+
             this.scene.add(mesh)
 
             /**
@@ -82,6 +87,11 @@ class Character {
              * Set target for animations
              */
             this.mixer = new THREE.AnimationMixer(this.target)
+
+            // gltfLoader.load('/static/animations/idle.glb', (animation) => {
+            //     this.onLoadAnimation('idle', animation)
+            //     this.stateMachine.setState('idle')
+            // })
 
             /**
              * Setup camera if controllable
@@ -106,33 +116,6 @@ class Character {
                 ry: mesh.rotation.y,
                 rz: mesh.rotation.z
             }
-
-            /**
-             * Load animations
-             */
-
-            /**
-             * Setup loading manager
-             */
-   
-
-            /**
-             * Map animation names to animations
-             */
-            gltfLoader.load('static/animations/idle.glb', (animation) => {
-                this.onLoadAnimation('idle', animation)
-                // this.mixer.clipAction(animation.animations[0]).play()
-            })
-            gltfLoader.load('static/animations/walking.glb', (animation) => {
-                this.onLoadAnimation('idle', animation)
-                // this.mixer.clipAction(animation.animations[0]).play()
-            })
-            gltfLoader.load('static/animations/walkingBackwards.glb', (animation) => {
-                this.onLoadAnimation('idle', animation)
-                // this.mixer.clipAction(animation.animations[0]).play()
-            })
-
-
             this.isLoaded = true
         })
 
@@ -153,6 +136,13 @@ class Character {
         if (this.target == undefined) {
             return
         }
+
+        // if (!this.stateMachine.currentState) {
+        //     console.log('NULL STATE')
+        //     return
+        // }
+
+        this.stateMachine.update(deltaTime, this.input)
 
         /**
          * Pull target position and rotation
@@ -209,23 +199,27 @@ class Character {
         /**
          * Apply rotation depending on orientation
          */
-         const forward = new THREE.Vector3(0, 0, 1)
-         forward.applyQuaternion(this.target.quaternion)
-         forward.normalize()
- 
-         const sideways = new THREE.Vector3(1, 0, 0)
-         sideways.applyQuaternion(this.target.quaternion)
-         sideways.normalize()
- 
-         forward.multiplyScalar(velocity.z * deltaTime)
-         sideways.multiplyScalar(velocity.x * deltaTime)
- 
-         this.target.position.add(forward)
-         this.target.position.add(sideways)
+        const forward = new THREE.Vector3(0, 0, 1)
+        forward.applyQuaternion(this.target.quaternion)
+        forward.normalize()
 
-         if (this.mixer) {
-             this.mixer.update(deltaTime)
-         }
+        const sideways = new THREE.Vector3(1, 0, 0)
+        sideways.applyQuaternion(this.target.quaternion)
+        sideways.normalize()
+
+        forward.multiplyScalar(velocity.z * deltaTime)
+        sideways.multiplyScalar(velocity.x * deltaTime)
+
+        this.target.position.add(forward)
+        this.target.position.add(sideways)
+
+        /**
+         * Update mixer time
+         */
+
+        if (this.mixer) {
+            this.mixer.update(deltaTime)
+        }
     }
 }
 

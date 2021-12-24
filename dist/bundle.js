@@ -42474,6 +42474,8 @@ var _DRACOLoader = require("./DRACOLoader.js");
 
 var _thirdPersonCamera = _interopRequireDefault(require("./thirdPersonCamera"));
 
+var _finiteStateMachine = _interopRequireDefault(require("./finiteStateMachine.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -42500,15 +42502,18 @@ var Character = function () {
       this.params = params;
       this.scene = params.scene;
       this.camera = params.camera;
+      this.animations = {};
 
       if (this.params.isControllable) {
         this.decceleration = new THREE.Vector3(-0.00005, -0.000001, -2.5);
         this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
         this.velocity = new THREE.Vector3();
         this.input = new _characterControllerInput["default"]();
+        this.stateMachine = new _finiteStateMachine["default"]({
+          animations: this.animations
+        });
       }
 
-      this.animations = {};
       this.loadModelAndAnimations();
     }
   }, {
@@ -42532,7 +42537,7 @@ var Character = function () {
       dracoLoader.setDecoderPath('static/draco');
       var gltfLoader = new _GLTFLoader.GLTFLoader();
       gltfLoader.setDRACOLoader(dracoLoader);
-      gltfLoader.load('/static/models/avatar.glb', function (glb) {
+      gltfLoader.load('/static/models/soldier-axes.glb', function (glb) {
         var mesh = glb.scene.children[0];
 
         _this.scene.add(mesh);
@@ -42557,15 +42562,6 @@ var Character = function () {
           ry: mesh.rotation.y,
           rz: mesh.rotation.z
         };
-        gltfLoader.load('static/animations/idle.glb', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
-        gltfLoader.load('static/animations/walking.glb', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
-        gltfLoader.load('static/animations/walkingBackwards.glb', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
         _this.isLoaded = true;
       });
     }
@@ -42586,6 +42582,7 @@ var Character = function () {
         return;
       }
 
+      this.stateMachine.update(deltaTime, this.input);
       var velocity = this.velocity;
       var rotationOffset = new THREE.Quaternion();
       var rotationAxis = new THREE.Vector3(0, 1, 0);
@@ -42637,7 +42634,7 @@ var Character = function () {
 var _default = Character;
 exports["default"] = _default;
 
-},{"./DRACOLoader.js":3,"./GLTFLoader.js":4,"./characterControllerInput.js":6,"./thirdPersonCamera":9,"three":2}],6:[function(require,module,exports){
+},{"./DRACOLoader.js":3,"./GLTFLoader.js":4,"./characterControllerInput.js":6,"./finiteStateMachine.js":7,"./thirdPersonCamera":10,"three":2}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -42731,6 +42728,201 @@ exports["default"] = _default;
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var THREE = _interopRequireWildcard(require("three"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } Object.defineProperty(subClass, "prototype", { value: Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }), writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+var FiniteStateMachine = function () {
+  function FiniteStateMachine(params) {
+    _classCallCheck(this, FiniteStateMachine);
+
+    this.states = {
+      'idle': IdleState,
+      'walk': WalkState
+    };
+    this.currentState = null;
+    this.animations = params.animations;
+  }
+
+  _createClass(FiniteStateMachine, [{
+    key: "setState",
+    value: function setState(name) {
+      var prevState = this.currentState;
+
+      if (prevState) {
+        if (prevState.name == name) {
+          return;
+        }
+
+        prevState.exit();
+      }
+
+      var state = new this.states[name](this);
+      this.currentState = state;
+      state.enter(prevState);
+    }
+  }, {
+    key: "update",
+    value: function update(deltaTime, input) {
+      if (this.currentState) {
+        this.currentState.update(deltaTime, input);
+      }
+    }
+  }]);
+
+  return FiniteStateMachine;
+}();
+
+var State = function () {
+  function State(parent) {
+    _classCallCheck(this, State);
+
+    this.parent = parent;
+  }
+
+  _createClass(State, [{
+    key: "enter",
+    value: function enter() {}
+  }, {
+    key: "exit",
+    value: function exit() {}
+  }, {
+    key: "update",
+    value: function update() {}
+  }]);
+
+  return State;
+}();
+
+var IdleState = function (_State) {
+  _inherits(IdleState, _State);
+
+  var _super = _createSuper(IdleState);
+
+  function IdleState(parent) {
+    var _this;
+
+    _classCallCheck(this, IdleState);
+
+    _this = _super.call(this, parent);
+    _this.name = 'idle';
+    return _this;
+  }
+
+  _createClass(IdleState, [{
+    key: "enter",
+    value: function enter(prevState) {
+      var idleAction = this.parent.animations['idle'].action;
+
+      if (prevState) {
+        var prevAction = this.parent.animations[prevState.name].action;
+        idleAction.enabled = true;
+        idleAction.time = 0.0;
+        idleAction.crossFadeFrom(prevAction, 0.5, true);
+        idleAction.play();
+      } else {
+        idleAction.play();
+      }
+    }
+  }, {
+    key: "exit",
+    value: function exit() {}
+  }, {
+    key: "update",
+    value: function update(deltaTime, input) {
+      if (input.controlKeys.w) {
+        console.log('WALKING');
+      } else if (input.controlKeys.s) {
+        console.log('WALKING BACKWARDS');
+      }
+    }
+  }]);
+
+  return IdleState;
+}(State);
+
+var WalkState = function (_State2) {
+  _inherits(WalkState, _State2);
+
+  var _super2 = _createSuper(WalkState);
+
+  function WalkState(parent) {
+    var _this2;
+
+    _classCallCheck(this, WalkState);
+
+    _this2 = _super2.call(this, parent);
+    _this2.name = 'walk';
+    return _this2;
+  }
+
+  _createClass(WalkState, [{
+    key: "enter",
+    value: function enter(prevState) {
+      var walkAction = this.parent.animations['walk'].action;
+
+      if (prevState) {
+        var prevAction = this.parent.animations[prevState.name].action;
+        walkAction.enabled = true;
+        walkAction.time = 0.0;
+        walkAction.crossFadeFrom(prevAction, 0.5, true);
+        walkAction.play();
+      } else {
+        walkAction.play();
+      }
+    }
+  }, {
+    key: "exit",
+    value: function exit() {}
+  }, {
+    key: "update",
+    value: function update(deltaTime, input) {
+      if (input.controlKeys.w) {
+        return;
+      }
+
+      this.parent.setState('idle');
+    }
+  }]);
+
+  return WalkState;
+}(State);
+
+var _default = FiniteStateMachine;
+exports["default"] = _default;
+
+},{"three":2}],8:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
 var THREE = _interopRequireWildcard(require("three"));
 
 var _scene = _interopRequireDefault(require("./scene.js"));
@@ -42761,6 +42953,7 @@ function animate() {
   if (currentUserId && character.isLoaded) {
     character.update(clock.getDelta());
     character.thirdPersonCamera.update();
+    character.stateMachine.update(clock.getDelta(), character.input);
     socket.emit('update', {
       id: currentUserId,
       model: character.userData.model,
@@ -42833,7 +43026,7 @@ function updateUsers(deltaTime) {
   });
 }
 
-},{"./character.js":5,"./scene.js":8,"dat.gui":1,"three":2}],8:[function(require,module,exports){
+},{"./character.js":5,"./scene.js":9,"dat.gui":1,"three":2}],9:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -42908,7 +43101,7 @@ var Scene = function () {
 var _default = Scene;
 exports["default"] = _default;
 
-},{"three":2}],9:[function(require,module,exports){
+},{"three":2}],10:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -42975,4 +43168,4 @@ var ThirdPersonCamera = function () {
 var _default = ThirdPersonCamera;
 exports["default"] = _default;
 
-},{"three":2}]},{},[7]);
+},{"three":2}]},{},[8]);

@@ -123,6 +123,14 @@ class Character {
                 this.onLoadAnimation('idle', animation)
                 // this.mixer.clipAction(animation.animations[0]).play()
             })
+            gltfLoader.load('static/animations/walking.glb', (animation) => {
+                this.onLoadAnimation('idle', animation)
+                // this.mixer.clipAction(animation.animations[0]).play()
+            })
+            gltfLoader.load('static/animations/walkingBackwards.glb', (animation) => {
+                this.onLoadAnimation('idle', animation)
+                // this.mixer.clipAction(animation.animations[0]).play()
+            })
 
 
             this.isLoaded = true

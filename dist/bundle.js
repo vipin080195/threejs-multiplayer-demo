@@ -45849,18 +45849,7 @@ var Character = function () {
           ry: mesh.rotation.y,
           rz: mesh.rotation.z
         };
-        var fbxLoader = new _FBXLoader.FBXLoader();
-        fbxLoader.setPath('static/animations/');
-        fbxLoader.load('idle.fbx', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
-        fbxLoader.load('startWalking.fbx', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
-        fbxLoader.load('stopWalking.fbx', function (animation) {
-          _this.onLoadAnimation('idle', animation);
-        });
-        fbxLoader.load('turning.fbx', function (animation) {
+        gltfLoader.load('static/animations/idle.glb', function (animation) {
           _this.onLoadAnimation('idle', animation);
         });
         _this.isLoaded = true;

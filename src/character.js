@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import CharacterControllerInput from './characterControllerInput.js'
 import { GLTFLoader } from './GLTFLoader.js'
 import { DRACOLoader } from './DRACOLoader.js'
-import { FBXLoader } from './FBXLoader.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 
 class Character {
@@ -120,20 +119,9 @@ class Character {
             /**
              * Map animation names to animations
              */
-            const fbxLoader = new FBXLoader()
-            fbxLoader.setPath('static/animations/')
-
-            fbxLoader.load('idle.fbx', (animation) => {
+            gltfLoader.load('static/animations/idle.glb', (animation) => {
                 this.onLoadAnimation('idle', animation)
-            })
-            fbxLoader.load('startWalking.fbx', (animation) => {
-                this.onLoadAnimation('idle', animation)
-            })
-            fbxLoader.load('stopWalking.fbx', (animation) => {
-                this.onLoadAnimation('idle', animation)
-            })
-            fbxLoader.load('turning.fbx', (animation) => {
-                this.onLoadAnimation('idle', animation)
+                // this.mixer.clipAction(animation.animations[0]).play()
             })
 
 

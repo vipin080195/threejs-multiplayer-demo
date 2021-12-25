@@ -90,27 +90,31 @@ class Scene {
     createColliders() {
         const geometry = new THREE.BoxGeometry(5, 5, 5, 5, 5, 5)
         const material = new THREE.MeshBasicMaterial({
-            color: '#222222',
+            color: '#220000',
             wireframe: true
         })
 
         /**
          * Create box colliders
          */
-        for (let i = 0; i < 1; i++) {
-            const collider = new THREE.Mesh(geometry, material)
-            collider.position.set(this.getRandomNumber(-25, 25), 2.5, this.getRandomNumber(-25, 25))
-            this.scene.add(collider)
-            this.colliders.push(collider)
+        for (let x = -10; x < 10; x += 5) {
+            for (let z = -10; z < 10; z += 5) {
+                if (x == 0 || z == 0) {
+                    continue
+                }
+
+                const collider = new THREE.Mesh(geometry, material)
+                collider.position.set(x, 2.5, z)
+                this.scene.add(collider)
+                this.colliders.push(collider)
+            }
         }
+
+        console.log(this.colliders.length)
 
         /**
          * Create floor collider
          */
-    }
-
-    getRandomNumber(min, max) {
-        return Math.random() * (max - min) + min
     }
 }
 

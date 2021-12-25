@@ -131,7 +131,7 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
              */
             if (renderedUsers[user.id] == undefined) {
                 renderedUsers[user.id] = new Character({
-                    scene: playerScene.scene,
+                    scene: playerScene,
                     isControllable: false
                 })
             }

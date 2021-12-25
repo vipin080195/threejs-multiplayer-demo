@@ -43045,7 +43045,7 @@ socket.on('payloadDrop', function handlePayloadDrop(params) {
 
       if (renderedUsers[user.id] == undefined) {
         renderedUsers[user.id] = new _character["default"]({
-          scene: playerScene.scene,
+          scene: playerScene,
           isControllable: false
         });
       }
@@ -43152,21 +43152,24 @@ var Scene = function () {
     value: function createColliders() {
       var geometry = new THREE.BoxGeometry(5, 5, 5, 5, 5, 5);
       var material = new THREE.MeshBasicMaterial({
-        color: '#222222',
+        color: '#220000',
         wireframe: true
       });
 
-      for (var i = 0; i < 1; i++) {
-        var collider = new THREE.Mesh(geometry, material);
-        collider.position.set(this.getRandomNumber(-25, 25), 2.5, this.getRandomNumber(-25, 25));
-        this.scene.add(collider);
-        this.colliders.push(collider);
+      for (var x = -10; x < 10; x += 5) {
+        for (var z = -10; z < 10; z += 5) {
+          if (x == 0 || z == 0) {
+            continue;
+          }
+
+          var collider = new THREE.Mesh(geometry, material);
+          collider.position.set(x, 2.5, z);
+          this.scene.add(collider);
+          this.colliders.push(collider);
+        }
       }
-    }
-  }, {
-    key: "getRandomNumber",
-    value: function getRandomNumber(min, max) {
-      return Math.random() * (max - min) + min;
+
+      console.log(this.colliders.length);
     }
   }]);
 

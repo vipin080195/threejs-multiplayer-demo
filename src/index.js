@@ -98,7 +98,7 @@ socket.on('setId', function handleSetId(params) {
      * Initialize Character and Camera
      */
     character = new Character({
-        scene: playerScene.scene,
+        scene: playerScene,
         camera: playerScene.camera,
         isControllable: true
     })

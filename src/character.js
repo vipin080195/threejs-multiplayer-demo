@@ -13,7 +13,8 @@ class Character {
     init(params) {
         this.isLoaded = false
         this.params = params
-        this.scene = params.scene
+        this.sceneParent = params.scene
+        this.scene = params.scene.scene
         this.camera = params.camera
 
         this.animations = {}
@@ -142,16 +143,60 @@ class Character {
         }
     }
 
+    checkIfCollision() {
+        /**
+         * Cast ray forward and backwards
+         */
+        /**
+         * Define raycaster position
+         */
+        const raycasterPosition = this.target.position.clone()
+        raycasterPosition.y += 1.5
+
+        /**
+         * Define raycaster direction
+         */
+        const raycasterDirection = new THREE.Vector3()
+        this.target.getWorldDirection(raycasterDirection)
+        
+        /**
+         * If moving forward, then negate direction
+         * getWorldDirection() gives direction of +ve Z axis
+         */
+        if (this.input.controlKeys.w) {
+            raycasterDirection.negate()
+        }
+
+        /**dw
+         * Create raycaster
+         */
+        let raycaster = new THREE.Raycaster(raycasterPosition, raycasterDirection)
+
+        /**
+         * Cast ray
+         */
+        let intersects = raycaster.intersectObjects(this.sceneParent.colliders)
+
+        /**
+         * Determine if collision
+         */
+        if (intersects.length > 0) {
+            if (intersects[0].distance < 0.5) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     update(deltaTime) {
         if (this.target == undefined) {
             return
         }
 
         if (!this.stateMachine.currentState) {
-            console.log('NULL STATE')
             return
         }
-
         this.stateMachine.update(deltaTime, this.input)
 
         /**
@@ -196,6 +241,15 @@ class Character {
         } else if (this.input.controlKeys.d) {
             rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * -Math.PI * deltaTime * this.acceleration.y)
             targetRotation.multiply(rotationOffset)
+        }
+
+        /**
+         * Check if collision occured
+         * forward/ backward - remove veloity
+         * left/ right - invert rotation
+         */
+        if (this.checkIfCollision()) {
+            velocity.z = 0
         }
 
         /**

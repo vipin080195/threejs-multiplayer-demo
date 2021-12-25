@@ -42500,7 +42500,8 @@ var Character = function () {
     value: function init(params) {
       this.isLoaded = false;
       this.params = params;
-      this.scene = params.scene;
+      this.sceneParent = params.scene;
+      this.scene = params.scene.scene;
       this.camera = params.camera;
       this.animations = {};
 
@@ -42588,6 +42589,29 @@ var Character = function () {
       };
     }
   }, {
+    key: "checkIfCollision",
+    value: function checkIfCollision() {
+      var raycasterPosition = this.target.position.clone();
+      raycasterPosition.y += 1.5;
+      var raycasterDirection = new THREE.Vector3();
+      this.target.getWorldDirection(raycasterDirection);
+
+      if (this.input.controlKeys.w) {
+        raycasterDirection.negate();
+      }
+
+      var raycaster = new THREE.Raycaster(raycasterPosition, raycasterDirection);
+      var intersects = raycaster.intersectObjects(this.sceneParent.colliders);
+
+      if (intersects.length > 0) {
+        if (intersects[0].distance < 0.5) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }, {
     key: "update",
     value: function update(deltaTime) {
       if (this.target == undefined) {
@@ -42595,7 +42619,6 @@ var Character = function () {
       }
 
       if (!this.stateMachine.currentState) {
-        console.log('NULL STATE');
         return;
       }
 
@@ -42623,6 +42646,10 @@ var Character = function () {
       } else if (this.input.controlKeys.d) {
         rotationOffset.setFromAxisAngle(rotationAxis, 2.0 * -Math.PI * deltaTime * this.acceleration.y);
         targetRotation.multiply(rotationOffset);
+      }
+
+      if (this.checkIfCollision()) {
+        velocity.z = 0;
       }
 
       this.target.quaternion.copy(targetRotation);
@@ -42996,7 +43023,7 @@ animate();
 socket.on('setId', function handleSetId(params) {
   currentUserId = params.id;
   character = new _character["default"]({
-    scene: playerScene.scene,
+    scene: playerScene,
     camera: playerScene.camera,
     isControllable: true
   });
@@ -43090,9 +43117,13 @@ var Scene = function () {
     };
     this.parameters = {};
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 100);
     var sunlight = new THREE.AmbientLight('#ffffff', 0.5);
     this.scene.add(sunlight);
+    var gridHelper = new THREE.GridHelper(100, 100);
+    this.scene.add(gridHelper);
+    this.colliders = [];
+    this.createColliders();
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true
@@ -43101,8 +43132,6 @@ var Scene = function () {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setClearColor(new THREE.Color('#000000'));
-    var gridHelper = new THREE.GridHelper(100, 100);
-    this.scene.add(gridHelper);
     window.addEventListener('resize', function (e) {
       _this.handleResize(e);
     });
@@ -43117,6 +43146,27 @@ var Scene = function () {
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(this.sizes.width, this.sizes.height);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    }
+  }, {
+    key: "createColliders",
+    value: function createColliders() {
+      var geometry = new THREE.BoxGeometry(5, 5, 5, 5, 5, 5);
+      var material = new THREE.MeshBasicMaterial({
+        color: '#222222',
+        wireframe: true
+      });
+
+      for (var i = 0; i < 1; i++) {
+        var collider = new THREE.Mesh(geometry, material);
+        collider.position.set(this.getRandomNumber(-25, 25), 2.5, this.getRandomNumber(-25, 25));
+        this.scene.add(collider);
+        this.colliders.push(collider);
+      }
+    }
+  }, {
+    key: "getRandomNumber",
+    value: function getRandomNumber(min, max) {
+      return Math.random() * (max - min) + min;
     }
   }]);
 

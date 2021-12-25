@@ -59,14 +59,15 @@ function animate() {
             z: character.target.position.z,
             rx: character.target.rotation.x,
             ry: character.target.rotation.y,
-            rz: character.target.rotation.z
+            rz: character.target.rotation.z,
+            clipAction: character.stateMachine.currentState.name
         })
     }
     /**
      * Update other users
      */
     if (renderedUsers) {
-        updateUsers(0.1)
+        updateUsers(clock.getDelta())
     }
 
     /**
@@ -109,7 +110,8 @@ socket.on('setId', function handleSetId(params) {
         z: character.userData.z,
         rx: character.userData.rx,
         ry: character.userData.ry,
-        rz: character.userData.rz
+        rz: character.userData.rz,
+        clipAction: character.userData.clipAction
     })
 })
 
@@ -159,6 +161,14 @@ socket.on('deleteUser', function handleDeleteUser(params) {
         mesh.rotation.y = remoteData[id].ry
         mesh.rotation.z = remoteData[id].rz
 
-        mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime)
+        mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), 0.1)
+        
+        if (renderedUsers[id].isLoaded) {
+            renderedUsers[id].mixer.update(0.025)
+            
+            if (remoteData[id].clipAction != undefined && renderedUsers[id].stateMachine.currentState.name != remoteData[id].clipAction) {
+                renderedUsers[id].stateMachine.setState(remoteData[id].clipAction)
+            }
+        }
     })
 }

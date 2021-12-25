@@ -37,7 +37,7 @@ class Scene {
         /**
          * Setup camera - FOV 70
          */
-        this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10)
+        this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 1000)
 
         /**
          * Lights

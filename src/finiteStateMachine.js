@@ -98,10 +98,9 @@ class IdleState extends State {
          * TODO: implement turn
          */
         if (input.controlKeys.w) {
-            // this.parent.setState('walk')
-            console.log('WALKING')
+            this.parent.setState('walk')
         } else if (input.controlKeys.s) {
-            console.log('WALKING BACKWARDS')
+            // console.log('WALKING BACKWARDS')
         }
     }
 }

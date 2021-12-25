@@ -42509,11 +42509,11 @@ var Character = function () {
         this.acceleration = new THREE.Vector3(0.1, 0.5, 5.0);
         this.velocity = new THREE.Vector3();
         this.input = new _characterControllerInput["default"]();
-        this.stateMachine = new _finiteStateMachine["default"]({
-          animations: this.animations
-        });
       }
 
+      this.stateMachine = new _finiteStateMachine["default"]({
+        animations: this.animations
+      });
       this.loadModelAndAnimations();
     }
   }, {
@@ -42531,19 +42531,30 @@ var Character = function () {
         z: mesh.position.z,
         rx: mesh.rotation.x,
         ry: mesh.rotation.y,
-        rz: mesh.rotation.rz
+        rz: mesh.rotation.rz,
+        clipAction: undefined
       };
       var dracoLoader = new _DRACOLoader.DRACOLoader();
       dracoLoader.setDecoderPath('static/draco');
       var gltfLoader = new _GLTFLoader.GLTFLoader();
       gltfLoader.setDRACOLoader(dracoLoader);
-      gltfLoader.load('/static/models/soldier-axes.glb', function (glb) {
-        var mesh = glb.scene.children[0];
+      gltfLoader.load('static/models/Soldier.glb', function (glb) {
+        var mesh = glb.scene;
 
         _this.scene.add(mesh);
 
         _this.target = mesh;
         _this.mixer = new THREE.AnimationMixer(_this.target);
+        _this.animations['idle'] = {
+          clip: glb.animations[0],
+          action: _this.mixer.clipAction(glb.animations[0])
+        };
+        _this.animations['walk'] = {
+          clip: glb.animations[0],
+          action: _this.mixer.clipAction(glb.animations[3])
+        };
+
+        _this.stateMachine.setState('idle');
 
         if (_this.params.isControllable) {
           _this.thirdPersonCamera = new _thirdPersonCamera["default"]({
@@ -42553,14 +42564,15 @@ var Character = function () {
         }
 
         _this.userData = {
-          model: 'girl',
+          model: 'soldier',
           mesh: mesh,
           x: mesh.position.x,
           y: mesh.position.y,
           z: mesh.position.z,
           rx: mesh.rotation.x,
           ry: mesh.rotation.y,
-          rz: mesh.rotation.z
+          rz: mesh.rotation.z,
+          clipAction: 'idle'
         };
         _this.isLoaded = true;
       });
@@ -42582,6 +42594,11 @@ var Character = function () {
         return;
       }
 
+      if (!this.stateMachine.currentState) {
+        console.log('NULL STATE');
+        return;
+      }
+
       this.stateMachine.update(deltaTime, this.input);
       var velocity = this.velocity;
       var rotationOffset = new THREE.Quaternion();
@@ -42593,9 +42610,9 @@ var Character = function () {
       velocity.add(frameDecceleration);
 
       if (this.input.controlKeys.w) {
-        velocity.z += this.acceleration.z * deltaTime;
-      } else if (this.input.controlKeys.s) {
         velocity.z -= this.acceleration.z * deltaTime;
+      } else if (this.input.controlKeys.s) {
+        velocity.z += this.acceleration.z * deltaTime;
       } else {
         velocity.z = 0;
       }
@@ -42858,10 +42875,8 @@ var IdleState = function (_State) {
     key: "update",
     value: function update(deltaTime, input) {
       if (input.controlKeys.w) {
-        console.log('WALKING');
-      } else if (input.controlKeys.s) {
-        console.log('WALKING BACKWARDS');
-      }
+        this.parent.setState('walk');
+      } else if (input.controlKeys.s) {}
     }
   }]);
 
@@ -42962,12 +42977,13 @@ function animate() {
       z: character.target.position.z,
       rx: character.target.rotation.x,
       ry: character.target.rotation.y,
-      rz: character.target.rotation.z
+      rz: character.target.rotation.z,
+      clipAction: character.stateMachine.currentState.name
     });
   }
 
   if (renderedUsers) {
-    updateUsers(0.1);
+    updateUsers(clock.getDelta());
   }
 
   playerScene.renderer.render(playerScene.scene, playerScene.camera);
@@ -42991,7 +43007,8 @@ socket.on('setId', function handleSetId(params) {
     z: character.userData.z,
     rx: character.userData.rx,
     ry: character.userData.ry,
-    rz: character.userData.rz
+    rz: character.userData.rz,
+    clipAction: character.userData.clipAction
   });
 });
 socket.on('payloadDrop', function handlePayloadDrop(params) {
@@ -43022,7 +43039,15 @@ function updateUsers(deltaTime) {
     mesh.rotation.x = remoteData[id].rx;
     mesh.rotation.y = remoteData[id].ry;
     mesh.rotation.z = remoteData[id].rz;
-    mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), deltaTime);
+    mesh.position.lerp(new THREE.Vector3(remoteData[id].x, remoteData[id].y, remoteData[id].z), 0.1);
+
+    if (renderedUsers[id].isLoaded) {
+      renderedUsers[id].mixer.update(0.025);
+
+      if (remoteData[id].clipAction != undefined && renderedUsers[id].stateMachine.currentState.name != remoteData[id].clipAction) {
+        renderedUsers[id].stateMachine.setState(remoteData[id].clipAction);
+      }
+    }
   });
 }
 
@@ -43065,7 +43090,7 @@ var Scene = function () {
     };
     this.parameters = {};
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 10);
+    this.camera = new THREE.PerspectiveCamera(70, this.sizes.width / this.sizes.height, 0.1, 1000);
     var sunlight = new THREE.AmbientLight('#ffffff', 0.5);
     this.scene.add(sunlight);
     this.renderer = new THREE.WebGLRenderer({
@@ -43147,7 +43172,7 @@ var ThirdPersonCamera = function () {
   }, {
     key: "calculateIdealOffset",
     value: function calculateIdealOffset() {
-      var idealOffset = new THREE.Vector3(0, 2, -4);
+      var idealOffset = new THREE.Vector3(0, 2, 4);
       idealOffset.applyQuaternion(this.target.quaternion);
       idealOffset.add(this.target.position);
       return idealOffset;
@@ -43155,7 +43180,7 @@ var ThirdPersonCamera = function () {
   }, {
     key: "calculateIdealLookAt",
     value: function calculateIdealLookAt() {
-      var idealLookAt = new THREE.Vector3(0, 1, 5);
+      var idealLookAt = new THREE.Vector3(0, 1, -5);
       idealLookAt.applyQuaternion(this.target.quaternion);
       idealLookAt.add(this.target.position);
       return idealLookAt;

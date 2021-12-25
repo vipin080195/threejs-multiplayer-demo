@@ -30,14 +30,14 @@ class Character {
              * Instantiate controller input
              */
             this.input = new CharacterControllerInput()
-
-            /**
-             * TODO: Instantiate FSM
-             */
-            this.stateMachine = new FiniteStateMachine({
-                animations: this.animations
-            })
         }
+
+        /**
+         * TODO: Instantiate FSM
+         */
+        this.stateMachine = new FiniteStateMachine({
+            animations: this.animations
+        })
         
         /**
          * TODO: Load models and Animations
@@ -60,7 +60,8 @@ class Character {
             z: mesh.position.z,
             rx: mesh.rotation.x,
             ry: mesh.rotation.y,
-            rz: mesh.rotation.rz
+            rz: mesh.rotation.rz,
+            clipAction: undefined
         }
 
 
@@ -73,8 +74,8 @@ class Character {
         const gltfLoader = new GLTFLoader()
         gltfLoader.setDRACOLoader(dracoLoader)
 
-        gltfLoader.load('/static/models/soldier-axes.glb', (glb) => {
-            const mesh = glb.scene.children[0]
+        gltfLoader.load('static/models/Soldier.glb', (glb) => {
+            const mesh = glb.scene
 
             this.scene.add(mesh)
 
@@ -88,10 +89,18 @@ class Character {
              */
             this.mixer = new THREE.AnimationMixer(this.target)
 
-            // gltfLoader.load('/static/animations/idle.glb', (animation) => {
-            //     this.onLoadAnimation('idle', animation)
-            //     this.stateMachine.setState('idle')
-            // })
+            /**
+             * Load animations
+             */
+            this.animations['idle'] = {
+                clip: glb.animations[0],
+                action: this.mixer.clipAction(glb.animations[0])
+            }
+            this.animations['walk'] = {
+                clip: glb.animations[0],
+                action: this.mixer.clipAction(glb.animations[3])
+            }
+            this.stateMachine.setState('idle')
 
             /**
              * Setup camera if controllable
@@ -107,14 +116,15 @@ class Character {
              * Store relevant information
              */
             this.userData = {
-                model: 'girl',
+                model: 'soldier',
                 mesh: mesh,
                 x: mesh.position.x,
                 y: mesh.position.y,
                 z: mesh.position.z,
                 rx: mesh.rotation.x,
                 ry: mesh.rotation.y,
-                rz: mesh.rotation.z
+                rz: mesh.rotation.z,
+                clipAction: 'idle'
             }
             this.isLoaded = true
         })
@@ -137,10 +147,10 @@ class Character {
             return
         }
 
-        // if (!this.stateMachine.currentState) {
-        //     console.log('NULL STATE')
-        //     return
-        // }
+        if (!this.stateMachine.currentState) {
+            console.log('NULL STATE')
+            return
+        }
 
         this.stateMachine.update(deltaTime, this.input)
 
@@ -167,12 +177,12 @@ class Character {
         velocity.add(frameDecceleration)
 
         /**
-         * Find move velocity
+         * Find move velocity - FLIPPED SIGNS - FIX MODEL
          */
         if (this.input.controlKeys.w) { 
-            velocity.z += this.acceleration.z * deltaTime
-        } else if (this.input.controlKeys.s) {
             velocity.z -= this.acceleration.z * deltaTime
+        } else if (this.input.controlKeys.s) {
+            velocity.z += this.acceleration.z * deltaTime
         } else {
             velocity.z = 0
         }

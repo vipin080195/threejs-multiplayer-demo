@@ -53,7 +53,8 @@ io.on('connection', function handleConnection (socket) {
             z: params.z,
             rx: params.rx,
             ry: params.ry,
-            rz: params.rz
+            rz: params.rz,
+            clipAction: params.clipAction
         }
     })
 
@@ -68,7 +69,8 @@ io.on('connection', function handleConnection (socket) {
             z: params.z,
             rx: params.rx,
             ry: params.ry,
-            rz: params.rz
+            rz: params.rz,
+            clipAction: params.clipAction
         }
     })
 

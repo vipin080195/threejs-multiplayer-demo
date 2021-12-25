@@ -29,14 +29,14 @@ class ThirdPersonCamera {
     }
 
     calculateIdealOffset() {
-        const idealOffset = new THREE.Vector3(0, 2, -4)
+        const idealOffset = new THREE.Vector3(0, 2, 4)
         idealOffset.applyQuaternion(this.target.quaternion)
         idealOffset.add(this.target.position)
         return idealOffset
     }
 
     calculateIdealLookAt() {
-        const idealLookAt = new THREE.Vector3(0, 1, 5)
+        const idealLookAt = new THREE.Vector3(0, 1, -5)
         idealLookAt.applyQuaternion(this.target.quaternion)
         idealLookAt.add(this.target.position)
         return idealLookAt

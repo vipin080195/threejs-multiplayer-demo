@@ -88,9 +88,9 @@ class Scene {
     }
 
     createColliders() {
-        const geometry = new THREE.BoxGeometry(5, 5, 5, 5, 5, 5)
+        const geometry = new THREE.BoxGeometry(5, 5, 5, 10, 10, 10)
         const material = new THREE.MeshBasicMaterial({
-            color: '#220000',
+            color: '#AA0000',
             wireframe: true
         })
 
@@ -102,15 +102,13 @@ class Scene {
                 if (x == 0 || z == 0) {
                     continue
                 }
-
+                
                 const collider = new THREE.Mesh(geometry, material)
-                collider.position.set(x, 2.5, z)
+                collider.position.set(x, 2.5 + 0.1, z)
                 this.scene.add(collider)
                 this.colliders.push(collider)
             }
         }
-
-        console.log(this.colliders.length)
 
         /**
          * Create floor collider

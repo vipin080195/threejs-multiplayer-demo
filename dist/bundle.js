@@ -42703,7 +42703,8 @@ var CharacterControllerInput = function () {
       w: false,
       a: false,
       s: false,
-      d: false
+      d: false,
+      q: false
     };
     window.addEventListener('keydown', function (e) {
       _this.handleKeyDown(e);
@@ -42733,6 +42734,15 @@ var CharacterControllerInput = function () {
 
         case 'd':
           this.controlKeys.d = true;
+          break;
+
+        case 'q':
+          if (this.controlKeys.q) {
+            this.controlKeys.q = false;
+          } else {
+            this.controlKeys.q = true;
+          }
+
           break;
       }
     }
@@ -42980,21 +42990,17 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 var socket = io();
-var gui = new dat.GUI({
-  closed: false
-});
 var playerScene = new _scene["default"]();
 var remoteData = {};
 var renderedUsers = {};
 var currentUserId = undefined;
-var currentUser = undefined;
 var character = undefined;
 var clock = new THREE.Clock();
 
 function animate() {
   if (currentUserId && character.isLoaded) {
     character.update(clock.getDelta());
-    character.thirdPersonCamera.update();
+    character.thirdPersonCamera.update(character.input);
     character.stateMachine.update(clock.getDelta(), character.input);
     socket.emit('update', {
       id: currentUserId,
@@ -43150,9 +43156,9 @@ var Scene = function () {
   }, {
     key: "createColliders",
     value: function createColliders() {
-      var geometry = new THREE.BoxGeometry(5, 5, 5, 5, 5, 5);
+      var geometry = new THREE.BoxGeometry(5, 5, 5, 10, 10, 10);
       var material = new THREE.MeshBasicMaterial({
-        color: '#220000',
+        color: '#AA0000',
         wireframe: true
       });
 
@@ -43163,13 +43169,11 @@ var Scene = function () {
           }
 
           var collider = new THREE.Mesh(geometry, material);
-          collider.position.set(x, 2.5, z);
+          collider.position.set(x, 2.5 + 0.1, z);
           this.scene.add(collider);
           this.colliders.push(collider);
         }
       }
-
-      console.log(this.colliders.length);
     }
   }]);
 
@@ -43210,22 +43214,30 @@ var ThirdPersonCamera = function () {
     this.target = params.mesh;
     this.currentPosition = new THREE.Vector3();
     this.currentLookAt = new THREE.Vector3();
+    this.isInThirdPerson = true;
+    this.idealOffset = new THREE.Vector3(0, 2, 4);
   }
 
   _createClass(ThirdPersonCamera, [{
     key: "update",
-    value: function update(timeElapsed) {
+    value: function update(input) {
+      if (input.controlKeys.q) {
+        this.idealOffset = new THREE.Vector3(0, 1.5, -0.5);
+      } else {
+        this.idealOffset = new THREE.Vector3(0, 2, 4);
+      }
+
       var idealOffset = this.calculateIdealOffset();
       var idealLookAt = this.calculateIdealLookAt();
-      this.currentPosition.lerp(idealOffset, 0.1);
-      this.currentLookAt.lerp(idealLookAt, 0.1);
+      this.currentPosition.lerp(idealOffset, 0.2);
+      this.currentLookAt.lerp(idealLookAt, 0.2);
       this.camera.position.copy(this.currentPosition);
       this.camera.lookAt(this.currentLookAt);
     }
   }, {
     key: "calculateIdealOffset",
     value: function calculateIdealOffset() {
-      var idealOffset = new THREE.Vector3(0, 2, 4);
+      var idealOffset = this.idealOffset;
       idealOffset.applyQuaternion(this.target.quaternion);
       idealOffset.add(this.target.position);
       return idealOffset;

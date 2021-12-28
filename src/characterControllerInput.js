@@ -9,7 +9,8 @@ class CharacterControllerInput {
             w: false,
             a: false,
             s: false,
-            d: false
+            d: false,
+            q: false
         }
 
         window.addEventListener('keydown', (e) => { this.handleKeyDown(e) })
@@ -30,6 +31,13 @@ class CharacterControllerInput {
                 break
             case 'd':
                 this.controlKeys.d = true
+                break
+            case 'q':
+                if (this.controlKeys.q) {
+                    this.controlKeys.q = false
+                } else {
+                    this.controlKeys.q = true
+                }
                 break
         }
     }

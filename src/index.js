@@ -11,9 +11,9 @@ const socket = io()
 /**
  * GUI - for tweaking parameters
  */
- const gui = new dat.GUI({
-    closed: false
-})
+// const gui = new dat.GUI({
+//     closed: false
+// })
 
 /**
  * Setup player local environment
@@ -30,7 +30,6 @@ const renderedUsers = {}
  * Quick access to current character
  */
 let currentUserId = undefined
-let currentUser = undefined
 
 /**
  * Controllers
@@ -48,7 +47,7 @@ function animate() {
      */
     if (currentUserId && character.isLoaded) {
         character.update(clock.getDelta())
-        character.thirdPersonCamera.update()
+        character.thirdPersonCamera.update(character.input)
         character.stateMachine.update(clock.getDelta(), character.input)
 
         socket.emit('update', {

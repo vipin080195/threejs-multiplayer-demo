@@ -104,7 +104,9 @@ class Scene {
                 }
                 
                 const collider = new THREE.Mesh(geometry, material)
+                collider.matrixAutoUpdate = false
                 collider.position.set(x, 2.5 + 0.1, z)
+                collider.updateMatrix()
                 this.scene.add(collider)
                 this.colliders.push(collider)
             }

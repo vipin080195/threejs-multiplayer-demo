@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 import CharacterControllerInput from './characterControllerInput.js'
-import { GLTFLoader } from './GLTFLoader.js'
-import { DRACOLoader } from './DRACOLoader.js'
 import ThirdPersonCamera from './thirdPersonCamera'
 import FiniteStateMachine from './finiteStateMachine.js'
+
+import { GLTFLoader } from './GLTFLoader.js'
+import { DRACOLoader } from './DRACOLoader.js'
 
 class Character {
     constructor(params) {

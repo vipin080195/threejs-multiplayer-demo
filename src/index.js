@@ -3,6 +3,8 @@ import Scene from './scene.js'
 import * as dat from 'dat.gui'
 import Character from './character.js'
 
+import { VRButton } from './VRButton.js'
+
 /**
  * Setup Socket.io-client
  */
@@ -41,11 +43,11 @@ let character = undefined
  */
 const clock = new THREE.Clock()
 
-function animate() {
+function update() {
     /**
      * Update controls & notify about changes
      */
-    if (currentUserId && character.isLoaded) {
+     if (currentUserId && character.isLoaded) {
         character.update(clock.getDelta())
         character.thirdPersonCamera.update(character.input)
         character.stateMachine.update(clock.getDelta(), character.input)
@@ -68,6 +70,13 @@ function animate() {
     if (renderedUsers) {
         updateUsers(clock.getDelta())
     }
+}
+
+function animate() {
+    /**
+     * Update
+     */
+    update()
 
     /**
      * Render scene
@@ -79,6 +88,19 @@ function animate() {
     })
 }
 animate()
+
+/**
+ * VR Rendering
+ */
+playerScene.renderer.xr.enabled = true
+document.body.appendChild(VRButton.createButton(playerScene.renderer))
+
+playerScene.renderer.setAnimationLoop(function() {
+    // update()
+
+    playerScene.renderer.render(playerScene.scene, playerScene.camera)
+})
+
 
 /**
  *  ------ Web socket communication with server -----

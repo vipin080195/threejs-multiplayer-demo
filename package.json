@@ -4,7 +4,7 @@
   "description": "Demo-ing threejs multiplayer interactions using web sockets",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"nodemon server.js\" \"watchify src/index.js -o dist/bundle.js -v\""
+    "dev": "concurrently \"nodemon server.js\" \"watchify src/index.js -o dist/bundle.js -d -v\""
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/zkpranav/threejs-multiplayer-demo#readme",
   "dependencies": {
+    "@babel/runtime": "^7.16.7",
     "dat.gui": "^0.7.7",
     "ejs": "^3.1.6",
     "express": "^4.17.2",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
+    "@babel/plugin-transform-runtime": "^7.16.7",
     "@babel/preset-env": "^7.16.5",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",

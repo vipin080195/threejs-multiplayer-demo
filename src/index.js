@@ -93,10 +93,11 @@ animate()
  * VR Rendering
  */
 playerScene.renderer.xr.enabled = true
+playerScene.renderer.xr.cameraAutoUpdate = false
 document.body.appendChild(VRButton.createButton(playerScene.renderer))
 
 playerScene.renderer.setAnimationLoop(function() {
-    // update()
+    playerScene.renderer.xr.updateCamera(playerScene.camera)
 
     playerScene.renderer.render(playerScene.scene, playerScene.camera)
 })
